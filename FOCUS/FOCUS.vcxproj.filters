@@ -1,0 +1,26 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="FOCUS.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <Xml Include="haarcascade_frontalface_alt.xml" />
+    <Xml Include="haarcascade_frontalface_alt2.xml" />
+    <Xml Include="haarcascade_frontalface_alt_tree.xml" />
+    <Xml Include="haarcascade_frontalface_default.xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Media Include="video.mp4" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="Coal.png" />
+    <Image Include="Copper.png" />
+    <Image Include="Diamond.png" />
+    <Image Include="Emerald.png" />
+    <Image Include="Gold.png" />
+    <Image Include="Iron.png" />
+    <Image Include="Lapis.png" />
+    <Image Include="Redstone.png" />
+    <Image Include="TNT.png" />
+  </ItemGroup>
+</Project>
