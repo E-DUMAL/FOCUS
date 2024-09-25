@@ -3,8 +3,11 @@
 #include "opencv2/imgproc.hpp"
 #include "opencv2/objdetect.hpp"
 #include "opencv2/videoio.hpp"
+#include <SFML/Audio.hpp>
 #include <chrono>
 #include <iostream>
+#include <thread>
+#include <vector>
 
 using namespace std;
 using namespace cv;
@@ -21,6 +24,25 @@ auto startTime = chrono::steady_clock::now();
 int xRandCoal, yCoal, xRandTNT, yTNT, xRandCopper, yCopper, xRandDiamond,
     yDiamond, xRandEmerald, yEmerald, xRandGold, yGold, xRandIron, yIron,
     xRandLapis, yLapis, xRandRedstone, yRedstone, score;
+
+vector<sf::SoundBuffer> soundBuffers(2);
+vector<sf::Sound> sounds(2);
+
+vector<Mat> images(9);
+
+void playSoundEffect(int soundIndex) {
+  if (soundIndex < 0 || soundIndex >= sounds.size()) {
+    cerr << "Erro: Índice de som inválido!" << endl;
+    return;
+  }
+
+  sounds[soundIndex].play();
+}
+
+void playSoundEffectInThread(int soundIndex) {
+  std::thread t(playSoundEffect, soundIndex);
+  t.detach();
+}
 
 void resetGame() {
   startTime = chrono::steady_clock::now();
@@ -43,6 +65,34 @@ void resetGame() {
   xRandRedstone = rng.uniform(500, 1500);
   yRedstone = 0;
   score = 0;
+}
+
+void loadResources() {
+  if (!soundBuffers[0].loadFromFile("Pop.wav")) {
+    cerr << "Erro ao carregar o arquivo de som Pop.wav!" << endl;
+  }
+  if (!soundBuffers[1].loadFromFile("Anvil.wav")) {
+    cerr << "Erro ao carregar o arquivo de som Anvil.wav!" << endl;
+  }
+
+  sounds[0].setBuffer(soundBuffers[0]);
+  sounds[1].setBuffer(soundBuffers[1]);
+
+  images[0] = imread("Coal.png", IMREAD_UNCHANGED);
+  images[1] = imread("TNT.png", IMREAD_UNCHANGED);
+  images[2] = imread("Copper.png", IMREAD_UNCHANGED);
+  images[3] = imread("Diamond.png", IMREAD_UNCHANGED);
+  images[4] = imread("Emerald.png", IMREAD_UNCHANGED);
+  images[5] = imread("Gold.png", IMREAD_UNCHANGED);
+  images[6] = imread("Iron.png", IMREAD_UNCHANGED);
+  images[7] = imread("Lapis.png", IMREAD_UNCHANGED);
+  images[8] = imread("Redstone.png", IMREAD_UNCHANGED);
+
+  for (auto &img : images) {
+    if (img.rows > 100 || img.cols > 84) {
+      resize(img, img, Size(100, 84));
+    }
+  }
 }
 
 int main(int argc, const char **argv) {
@@ -82,7 +132,8 @@ int main(int argc, const char **argv) {
                           : 60; // Calcula o tempo de espera em milissegundos,
                                 // usa 30ms como padrão se fps for zero
 
-    resetGame(); // Inicializa as variáveis do jogo
+    loadResources(); // Carrega os recursos (sons e imagens)
+    resetGame();     // Inicializa as variáveis do jogo
 
     while (1) {
       capture >> frame;
@@ -201,11 +252,12 @@ bool isIntersecting(const Rect &rect1, const Rect &rect2) {
 }
 
 void intersectionPoints(const Rect &r, Rect &objRect, int &yObj, int &xRandObj,
-                        int &score, int scoreChange) {
+                        int &score, int scoreChange, int soundIndex) {
   if (isIntersecting(r, objRect)) {
     score += scoreChange;
     yObj = 0;
     xRandObj = rng.uniform(100, 1821);
+    playSoundEffectInThread(soundIndex);
   }
 }
 
@@ -222,10 +274,7 @@ void detectAndDraw(Mat &frame, CascadeClassifier &cascade, double scale,
   cvtColor(smallFrame, grayFrame, COLOR_BGR2GRAY);
   equalizeHist(grayFrame, grayFrame);
 
-  printf("smallFrame::width: %d, height=%d\n", smallFrame.cols,
-         smallFrame.rows);
-
-  cascade.detectMultiScale(grayFrame, faces, 1.6, 2,
+  cascade.detectMultiScale(grayFrame, faces, 1.2, 3,
                            0 | CASCADE_FIND_BIGGEST_OBJECT |
                                CASCADE_DO_ROUGH_SEARCH | CASCADE_SCALE_IMAGE,
                            Size(40, 40));
@@ -248,15 +297,16 @@ void detectAndDraw(Mat &frame, CascadeClassifier &cascade, double scale,
     Rect redstoneRect(xRandRedstone, yRedstone, 100, 84);
     Rect TNTRect(xRandTNT, yTNT, 100, 84);
     if (elapsedTime <= 30) {
-      intersectionPoints(r, coalRect, yCoal, xRandCoal, score, 5);
-      intersectionPoints(r, TNTRect, yTNT, xRandTNT, score, -100);
-      intersectionPoints(r, copperRect, yCopper, xRandCopper, score, 7);
-      intersectionPoints(r, diamondRect, yDiamond, xRandDiamond, score, 19);
-      intersectionPoints(r, emeraldRect, yEmerald, xRandEmerald, score, 22);
-      intersectionPoints(r, goldRect, yGold, xRandGold, score, 17);
-      intersectionPoints(r, ironRect, yIron, xRandIron, score, 10);
-      intersectionPoints(r, lapisRect, yLapis, xRandLapis, score, 12);
-      intersectionPoints(r, redstoneRect, yRedstone, xRandRedstone, score, 14);
+      intersectionPoints(r, coalRect, yCoal, xRandCoal, score, 5, 0);
+      intersectionPoints(r, TNTRect, yTNT, xRandTNT, score, -100, 1);
+      intersectionPoints(r, copperRect, yCopper, xRandCopper, score, 7, 0);
+      intersectionPoints(r, diamondRect, yDiamond, xRandDiamond, score, 19, 0);
+      intersectionPoints(r, emeraldRect, yEmerald, xRandEmerald, score, 22, 0);
+      intersectionPoints(r, goldRect, yGold, xRandGold, score, 17, 0);
+      intersectionPoints(r, ironRect, yIron, xRandIron, score, 10, 0);
+      intersectionPoints(r, lapisRect, yLapis, xRandLapis, score, 12, 0);
+      intersectionPoints(r, redstoneRect, yRedstone, xRandRedstone, score, 14,
+                         0);
     }
   }
 

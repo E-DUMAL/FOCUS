@@ -11,6 +11,8 @@
   </ItemGroup>
   <ItemGroup>
     <Media Include="video.mp4" />
+    <Media Include="Pop.wav" />
+    <Media Include="Anvil.wav" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="Coal.png" />
