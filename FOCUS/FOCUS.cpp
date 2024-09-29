@@ -5,6 +5,7 @@
 #include "opencv2/videoio.hpp"
 #include <SFML/Audio.hpp>
 #include <chrono>
+#include <fstream>
 #include <iostream>
 #include <thread>
 #include <vector>
@@ -12,11 +13,26 @@
 using namespace std;
 using namespace cv;
 
+bool isSaved = false;
+
+void saveFile(int score) {
+  fstream file;
+  file.open("placar.txt", ios::app);
+  if (!file) {
+    cout << "Erro ao abrir o arquivo!" << endl;
+  } else if (isSaved == false) {
+    cout << "Escrevi no arquivo!" << endl;
+    file << score << endl;
+    isSaved = true;
+    file.close();
+  }
+}
+
 void detectAndDraw(Mat &frame, CascadeClassifier &cascade, double scale,
                    bool tryflip, int elapsedTime);
 RNG rng(cv::getTickCount());
 string cascadeName;
-string wName = "Game";
+string wName = "FOCUS";
 
 // Variável global para armazenar o tempo do último reset
 auto startTime = chrono::steady_clock::now();
@@ -32,7 +48,7 @@ vector<Mat> images(9);
 
 void playSoundEffect(int soundIndex) {
   if (soundIndex < 0 || soundIndex >= sounds.size()) {
-    cerr << "Erro: Índice de som inválido!" << endl;
+    cout << "Erro: Índice de som inválido!" << endl;
     return;
   }
 
@@ -65,14 +81,15 @@ void resetGame() {
   xRandRedstone = rng.uniform(500, 1500);
   yRedstone = 0;
   score = 0;
+  isSaved = false;
 }
 
 void loadResources() {
   if (!soundBuffers[0].loadFromFile("Pop.wav")) {
-    cerr << "Erro ao carregar o arquivo de som Pop.wav!" << endl;
+    cout << "Erro ao carregar o arquivo de som Pop.wav!" << endl;
   }
   if (!soundBuffers[1].loadFromFile("Anvil.wav")) {
-    cerr << "Erro ao carregar o arquivo de som Anvil.wav!" << endl;
+    cout << "Erro ao carregar o arquivo de som Anvil.wav!" << endl;
   }
 
   sounds[0].setBuffer(soundBuffers[0]);
@@ -149,7 +166,7 @@ int main(int argc, const char **argv) {
       // Verifica se um segundo se passou desde a última atualização
       auto currentTime = chrono::steady_clock::now();
       auto elapsedTime =
-          chrono::duration_cast<chrono::seconds>(currentTime - startTime)
+          chrono::duration_cast<chrono::milliseconds>(currentTime - startTime)
               .count();
 
       detectAndDraw(frame, cascade, scale, tryflip, elapsedTime);
@@ -296,7 +313,7 @@ void detectAndDraw(Mat &frame, CascadeClassifier &cascade, double scale,
     Rect lapisRect(xRandLapis, yLapis, 100, 84);
     Rect redstoneRect(xRandRedstone, yRedstone, 100, 84);
     Rect TNTRect(xRandTNT, yTNT, 100, 84);
-    if (elapsedTime <= 30) {
+    if (elapsedTime <= 30000) {
       intersectionPoints(r, coalRect, yCoal, xRandCoal, score, 5, 0);
       intersectionPoints(r, TNTRect, yTNT, xRandTNT, score, -100, 1);
       intersectionPoints(r, copperRect, yCopper, xRandCopper, score, 7, 0);
@@ -310,7 +327,7 @@ void detectAndDraw(Mat &frame, CascadeClassifier &cascade, double scale,
     }
   }
 
-  if (elapsedTime <= 30) {
+  if (elapsedTime <= 30000) {
     // Desenha uma imagem
     Mat img = cv::imread("Coal.png", IMREAD_UNCHANGED),
         img2 = imread("TNT.png", IMREAD_UNCHANGED),
@@ -404,7 +421,8 @@ void detectAndDraw(Mat &frame, CascadeClassifier &cascade, double scale,
 
   // Desenha um texto
   color = Scalar(255, 255, 255);
-  if (elapsedTime <= 30) {
+
+  if (elapsedTime <= 30000) {
     drawTransRect(smallFrame, Scalar(242, 101, 88), alpha,
                   Rect(0, 0, 1270, 110));
     putText(smallFrame, "Placar:", Point(0, 80), FONT_HERSHEY_DUPLEX, 3, color);
@@ -412,9 +430,10 @@ void detectAndDraw(Mat &frame, CascadeClassifier &cascade, double scale,
             3, color);
     putText(smallFrame, "Tempo:", Point(800, 80), FONT_HERSHEY_DUPLEX, 3,
             color);
-    putText(smallFrame, to_string(30 - elapsedTime), Point(1140, 80),
-            FONT_HERSHEY_DUPLEX, 3, color);
+    putText(smallFrame, to_string((30000 - elapsedTime) / 1000),
+            Point(1140, 80), FONT_HERSHEY_DUPLEX, 3, color);
   } else {
+    saveFile(score);
     drawTransRect(smallFrame, Scalar(242, 101, 88), alpha,
                   Rect(0, 0, 1420, 110));
     drawTransRect(smallFrame, Scalar(242, 101, 88), alpha,
