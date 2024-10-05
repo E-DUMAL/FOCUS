@@ -23,7 +23,6 @@
     <Keyword>Win32Proj</Keyword>
     <ProjectGuid>{4ccdb07d-3100-45f1-a841-ef06b3ae38a1}</ProjectGuid>
     <RootNamespace>FOCUS</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
     <ProjectName>FOCUS</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -170,6 +169,7 @@
     <Image Include="TNT.png" />
   </ItemGroup>
   <ItemGroup>
+    <Media Include="abc.mp4" />
     <Media Include="Anvil.wav" />
     <Media Include="Pop.wav" />
     <Media Include="video.mp4" />

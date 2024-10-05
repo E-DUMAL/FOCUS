@@ -13,6 +13,7 @@
     <Media Include="video.mp4" />
     <Media Include="Pop.wav" />
     <Media Include="Anvil.wav" />
+    <Media Include="abc.mp4" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="Coal.png" />
