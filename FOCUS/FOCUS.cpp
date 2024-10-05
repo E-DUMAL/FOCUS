@@ -159,7 +159,7 @@ int main(int argc, const char** argv) {
 		return -1;
 	}
 
-	if (!capture.open("abc.mp4")) {
+	if (!capture.open("video720.mp4")) {
 		cout << "Capture from camera #0 didn't work" << endl;
 		return 1;
 	}
