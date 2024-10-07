@@ -22,7 +22,7 @@ Esse foi um projeto desenvolvido por discentes do curso de *Engenharia da Comput
 
 -  	:bow_and_arrow: *[Derzu Omaia](https://github.com/derzu)*
 
-![wallpaperflare com_wallpaper](https://github.com/user-attachments/assets/0c1610d9-f5bd-4bd7-90b6-7613d0beb32b)
+[![wallpaperflare com_wallpaper](https://github.com/user-attachments/assets/0c1610d9-f5bd-4bd7-90b6-7613d0beb32b)](#gem-focus---facial-opencv-unearthing-system)
 
 <!-- Colocar link na imagem -->
 
