@@ -2,7 +2,7 @@
 
 - ### [:dart: Objetivo](#dart-objetivo-1)
 - ### [:apple: Diagrama de Classes](#apple-diagrama-de-classes-1)
-- ### [:cut_of_meat: Dependências](#cut-of-meat-dependências-1)
+- ### [:cut_of_meat: Dependências](#cut_of_meat-dependências-1)
 - ### [:zombie: Como rodar](#zombie-como-rodar-1)
 - ### [:arrow_down: Baixar o projeto](https://github.com/E-DUMAL/FOCUS/archive/refs/heads/main.zip)
 
