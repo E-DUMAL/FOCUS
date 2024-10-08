@@ -1,23 +1,43 @@
-#include "opencv2/core.hpp"
-#include "opencv2/highgui.hpp"
-#include "opencv2/imgproc.hpp"
-#include "opencv2/objdetect.hpp"
-#include "opencv2/videoio.hpp"
-#include <SFML/Audio.hpp>
-#include <chrono>
-#include <fstream>
-#include <iostream>
-#include <thread>
-#include <vector>
+/* 
+	Seção Inclusão:
 
-using namespace std;
-using namespace cv;
+	- Inclusão de Bibliotecas e Depedências
+	- Definido o namespace utilizado
+	- Constantes e váriaveis de controle
 
-int highScore = INT_MIN;
-bool isSaved = false;
+*/
+
+// OpenCV - Biblioteca de visão computacional para processamento de imagem e vídeo
+#include "opencv2/core.hpp"       // Funções fundamentais, manipulação de matrizes e operações matemáticas
+#include "opencv2/highgui.hpp"    // Exibição de imagens e vídeos, interface gráfica com o usuário
+#include "opencv2/imgproc.hpp"    // Processamento de imagem, filtragem, transformações, detecção de bordas
+#include "opencv2/objdetect.hpp"  // Detecção de objetos como faces, corpos, ou outros padrões
+#include "opencv2/videoio.hpp"    // Captura e gravação de vídeos, acesso a dispositivos de captura (câmeras)
+
+// SFML - Biblioteca multimídia para manipulação de áudio
+#include <SFML/Audio.hpp>         // Manipulação de áudio, como reprodução de sons e música
+
+// Bibliotecas padrão do C++ - Utilizadas para várias operações no código
+#include <chrono>                 // Medição e manipulação de tempo, temporizadores e intervalos
+#include <fstream>                // Operações de entrada e saída de arquivos
+#include <iostream>               // Operações básicas de entrada e saída no terminal
+#include <thread>                 // Suporte à execução de código em múltiplas threads
+#include <vector>                 // Estrutura de dados dinâmica (vetor) para armazenar coleções de itens
 
 
+using namespace std;  // Namespace da biblioteca padrão C++ (std)
+using namespace cv;   // Namespace OpenCV (cv)
 
+
+int highScore = INT_MIN;	// Inicializa a variável "Maior Score" com o menor valor possível dos inteiros
+bool isSaved = false;		// Inicializa a variável de controle para saber se o recorde está salvo
+
+
+/*
+	Função que tenta abrir o arquivo "placar.txt" para leitura.
+	Se o arquivo não existir ou não puder ser aberto, exibe uma mensagem de erro. 
+	Caso contrário, lê o valor do placar e o armazena na variável highScore.
+*/
 void firstTimeReadFile() {
 	fstream file;
 	file.open("placar.txt", ios::in);
@@ -29,6 +49,8 @@ void firstTimeReadFile() {
 		file.close();
 	}
 }
+
+
 void saveFile(int score) {
 	fstream file;
 	file.open("placar.txt", ios::in);
@@ -453,7 +475,10 @@ void detectAndDraw(Mat& frame, CascadeClassifier& cascade, double scale,
 
 	// Desenha um texto
 	color = Scalar(255, 255, 255);
-	firstTimeReadFile();
+
+	firstTimeReadFile();	// Chamando o método para ler o maior record
+
+
 	int highScoreWidth = 0;
 	if (highScore < 100 && highScore >-100) {
 		highScoreWidth = 375;
