@@ -27,4 +27,10 @@
     <Image Include="TNT.png" />
     <Image Include="Fundo.png" />
   </ItemGroup>
+  <ItemGroup>
+    <Text Include="..\LICENSE.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\README.md" />
+  </ItemGroup>
 </Project>

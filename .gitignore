@@ -362,3 +362,5 @@ FodyWeavers.xsd
 placar.txt
 *.tlog/
 *.exe.recipe
+/FOCUS/abc.mp4
+/FOCUS/FOCUS.vcxproj
