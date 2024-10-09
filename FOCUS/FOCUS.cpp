@@ -1,3 +1,11 @@
+/*
+	Seção To-do - Controle de desenvolvimento
+	-> Fazer classes:
+		-> Fazer uma classe de gerenciamento p/ firstTimeReadFile e saveFile
+		-> Fazer classe para tocar os sons
+
+*/
+
 /* 
 	Seção Inclusão:
 
@@ -32,6 +40,11 @@ using namespace cv;   // Namespace OpenCV (cv)
 int highScore = INT_MIN;	// Inicializa a variável "Maior Score" com o menor valor possível dos inteiros
 bool isSaved = false;		// Inicializa a variável de controle para saber se o recorde está salvo
 
+/*
+	Seção de gerenciamento de Arquivo:
+	- Ler o recorde ao iniciar o programa
+	- Salvar o recorde ao finalizar o programa
+*/
 
 /*
 	Função que tenta abrir o arquivo "placar.txt" para leitura.
@@ -50,7 +63,14 @@ void firstTimeReadFile() {
 	}
 }
 
-
+/*	
+	Função que salva a maior pontuação (score) no arquivo "placar.txt".
+	Primeiro, tenta abrir o arquivo para leitura e verifica se a pontuação 
+	registrada (highScore) pode ser lida. Em seguida, abre o arquivo para 
+	escrita. Se a pontuação atual for maior que highScore, grava a nova 
+	pontuação no arquivo; caso contrário, mantém o recorde atual. 
+	Ao final, define isSaved como true.
+*/
 void saveFile(int score) {
 	fstream file;
 	file.open("placar.txt", ios::in);
@@ -78,24 +98,55 @@ void saveFile(int score) {
 	file.close();
 }
 
+/*
+	Seção de configuraçães de variáveis essenciais e complexas e mecanismos
+
+	Configura variáveis essenciais para a lógica
+	Configura Paramêtros da exibição
+	Configura aleatoriedade dos itens
+	Define funções para o uso de textura e sons
+*/
+
+/*
+	Definição da assinatura da Função detectAndDraw
+
+	Parâmetros:
+	 - Mat& frame: referência para o quadro de imagem atual a ser processado
+	 
+	 - CascadeClassifier& cascade: referência para o classificador em cascata
+	 
+	 - double scale: fator de escala para redimensionar a imagem durante a detecção.
+	 
+	 - bool tryflip: indica se deve tentar inverter a imagem p/ detectar os objetos
+	
+	 - int elapsedTime: variável que registra o tempo decorrido
+*/
+
 void detectAndDraw(Mat& frame, CascadeClassifier& cascade, double scale,
 	bool tryflip, int elapsedTime);
-RNG rng(cv::getTickCount());
-string cascadeName;
-string wName = "FOCUS";
+
+RNG rng(cv::getTickCount());	// Inicializa um gerador de números aleatórios com o timestamp atual
+string cascadeName;				// Nome do arquivo do classificador em cascata.
+string wName = "FOCUS";			// Nome da janela de exibição do jogo
 
 // Variável global para armazenar o tempo do último reset
 auto startTime = chrono::steady_clock::now();
 
+// Variáveis globais das coordenadas dos itens que aparecem para o player
 int xRandCoal, yCoal, xRandTNT, yTNT, xRandCopper, yCopper, xRandDiamond,
 yDiamond, xRandEmerald, yEmerald, xRandGold, yGold, xRandIron, yIron,
 xRandLapis, yLapis, xRandRedstone, yRedstone, score;
 
-vector<sf::SoundBuffer> soundBuffers(2);
-vector<sf::Sound> sounds(2);
+vector<sf::SoundBuffer> soundBuffers(2);	// Vecotr com Buffers para sons.
+vector<sf::Sound> sounds(2);				// Vector de sons correspondentes aos buffers.
 
-vector<Mat> images(9);
+vector<Mat> images(9);	// Vetor para armazenar imagens para o processamento.
 
+/*
+	Função que reproduz um efeito sonoro com base no índice fornecido.
+	Verifica se o índice é válido antes de tentar reproduzir o som.
+	Se o índice for inválido, exibe uma mensagem de erro.
+*/
 void playSoundEffect(int soundIndex) {
 	if (soundIndex < 0 || soundIndex >= sounds.size()) {
 		cout << "Erro: Índice de som inválido!" << endl;
@@ -105,10 +156,26 @@ void playSoundEffect(int soundIndex) {
 	sounds[soundIndex].play();
 }
 
+/*
+	Função que reproduz um efeito sonoro ao chamar a função playSoundEffect em uma nova thread.
+*/
 void playSoundEffectInThread(int soundIndex) {
+	// Cria uma nova thread que executa a função playSoundEffect
+	// passando o índice do som como argumento.
 	std::thread t(playSoundEffect, soundIndex);
+	// Desacopla a thread, permitindo que ela continue a execução
+	// em segundo plano, independentemente do thread principal.
 	t.detach();
 }
+
+/*
+	Função que reinicia o estado do jogo.
+	- Chamada ao apertar r
+	- Reinicia as coordenadas dos itens, com x aleatório e y = 0
+	- Zera o score 
+	- Marca como false a variável de controle do save
+	- Reinicia o temporizador do jogo, armazenando o tempo atual na variável startTime
+*/
 
 void resetGame() {
 	startTime = chrono::steady_clock::now();
@@ -134,17 +201,24 @@ void resetGame() {
 	isSaved = false;
 }
 
+/*
+	Função de carregar recursos de som e imagem para o jogo
+*/
 void loadResources() {
+	// Carrega o primeiro arquivo de som e verifica se ocorreu um erro.
 	if (!soundBuffers[0].loadFromFile("Pop.wav")) {
 		cout << "Erro ao carregar o arquivo de som Pop.wav!" << endl;
 	}
+	// Carrega o segundo arquivo de som e verifica se ocorreu um erro.
 	if (!soundBuffers[1].loadFromFile("Anvil.wav")) {
 		cout << "Erro ao carregar o arquivo de som Anvil.wav!" << endl;
 	}
 
+	// Associa os buffers de som aos objetos de som.
 	sounds[0].setBuffer(soundBuffers[0]);
 	sounds[1].setBuffer(soundBuffers[1]);
 
+	// Carrega imagens dos recursos do jogo.
 	images[0] = imread("Coal.png", IMREAD_UNCHANGED);
 	images[1] = imread("TNT.png", IMREAD_UNCHANGED);
 	images[2] = imread("Copper.png", IMREAD_UNCHANGED);
@@ -155,6 +229,7 @@ void loadResources() {
 	images[7] = imread("Lapis.png", IMREAD_UNCHANGED);
 	images[8] = imread("Redstone.png", IMREAD_UNCHANGED);
 
+	// Redimensiona imagens maiores que 100x84 pixels.
 	for (auto& img : images) {
 		if (img.rows > 100 || img.cols > 84) {
 			resize(img, img, Size(100, 84));
@@ -162,36 +237,46 @@ void loadResources() {
 	}
 }
 
+/*
+	~Main do programa ~Chamada das funções e variáveis já implementadas + detectAndDraw
+*/
 int main(int argc, const char** argv) {
-	VideoCapture capture;
-	Mat frame;
-	bool tryflip;
-	CascadeClassifier cascade;
-	double scale;
-	char key = 0;
+	// Declaração de variáveis
+	VideoCapture capture;	// Usado para capturar vídeo de um arquivo ou câmera
+	Mat frame;				// Estrutura que armazena os quadros do vídeo
+	bool tryflip;			// Variável que indica se o vídeo deve ser invertido horizontalmente
+	CascadeClassifier cascade; // Usado para a detecção em cascata
+	double scale;			// Fator de escala para redimensionar a imagem durante a detecção
+	char key = 0;			// Variável para armazenar a tecla digitada
 
-	cascadeName = "haarcascade_frontalface_alt.xml";
+	// Inicializando e configurando as variáveis declaradas
+	cascadeName = "haarcascade_frontalface_alt.xml";	// Arquivo utilizado para a detecção em cascata
 	scale = 1; // usar 1, 2, 4.
 	if (scale < 1)
 		scale = 1;
 	tryflip = false;
 
+	// Tenta carregar o classificador em cascata
 	if (!cascade.load(cascadeName)) {
 		cout << "ERROR: Could not load classifier cascade: " << cascadeName << endl;
 		return -1;
 	}
 
+	// Tenta abrir o vídeo -> Limpar argumento para tentar abrir a câmera
 	if (!capture.open("video720.mp4")) {
 		cout << "Capture from camera #0 didn't work" << endl;
 		return 1;
 	}
 
+	// Definição da largura e altura do quadro do vídeo
+	// Configurar de acordo com webcam / vídeo
 	capture.set(CAP_PROP_FRAME_WIDTH, 1280); // Largura desejada
 	capture.set(CAP_PROP_FRAME_HEIGHT, 720); // Altura desejada
-
+	
+	// Testa se a abertura ocorreu com êxito e inicia o jogo
 	if (capture.isOpened()) {
 		cout << "Video capturing has been started ..." << endl;
-		namedWindow(wName, WINDOW_KEEPRATIO);
+		namedWindow(wName, WINDOW_KEEPRATIO);	// Abre a janela para a exibição
 
 		int fps = static_cast<int>(
 			capture.get(CAP_PROP_FPS)); // Obtém a taxa de quadros do vídeo
@@ -202,23 +287,29 @@ int main(int argc, const char** argv) {
 		loadResources(); // Carrega os recursos (sons e imagens)
 		resetGame();     // Inicializa as variáveis do jogo
 
-		while (1) {
-			capture >> frame;
-			capture >> frame;
-			if (frame.empty()) {
+		while (1) {	// While onde ocorre a repetição do código
+
+			capture >> frame;	// Captura um novo quadro do vídeo
+			capture >> frame;	// Captura um segundo quadro
+
+			if (frame.empty()) {	// Testa se o frame está vazio
 				cout << "ERROR: Frame is empty!" << endl;
 				break;
 			}
+
+			// Verifica se a tecla pressionada é 0, indicando que é a primeira iteração do loop e
+			// Redimensiona a janela de exibição do vídeo para corresponder às dimensões do quadro (scale)
 			if (key == 0) // just first time
 				resizeWindow(wName, static_cast<int>(frame.cols / scale),
 					static_cast<int>(frame.rows / scale));
 
-			// Verifica se um segundo se passou desde a última atualização
+			// Verifica se um segundo se passou desde a última atualização e atualiza o tempo decorrido
 			auto currentTime = chrono::steady_clock::now();
 			auto elapsedTime =
 				chrono::duration_cast<chrono::milliseconds>(currentTime - startTime)
 				.count();
 
+			// Chama a função que detecta os rostos e interage com a exibição
 			detectAndDraw(frame, cascade, scale, tryflip, elapsedTime);
 
 			key = (char)waitKey(delay); // Usa o tempo de espera calculado
@@ -227,16 +318,23 @@ int main(int argc, const char** argv) {
 			if (key == 'r' || key == 'R') { // Verifica se a tecla 'r' foi pressionada
 				resetGame();
 			}
+			// Se a janela for fechada, o while é encerrado
 			if (getWindowProperty(wName, WND_PROP_VISIBLE) == 0)
 				break;
 		}
 	}
-	else {
+	else { // Caso o/a vídeo/câmera não consiga ser aberto(a)
 		cout << "ERROR: Could not open video capture!" << endl;
 	}
 
 	return 0;
 }
+
+/*
+	
+	Seção das configurações dos componentes da função detectAndDraw
+
+*/
 
 /**
  * @brief Draws a transparent image over a frame Mat.
@@ -247,6 +345,13 @@ int main(int argc, const char** argv) {
  * @param xPos x position of the frame image where the image will start.
  * @param yPos y position of the frame image where the image will start.
  */
+
+/*
+	Função responsável por desenhar uma imagem em uma posição especifica
+	-> Recebe o frame
+	-> Recebe a imagem a ser desenhada
+	-> Recebe o x e o y da posição
+*/
 void drawImage(Mat frame, Mat img, int xPos, int yPos) {
 	// Calcula as dimensões da região onde a imagem será desenhada
 	int width = img.cols;
@@ -274,23 +379,32 @@ void drawImage(Mat frame, Mat img, int xPos, int yPos) {
 		return;
 	}
 
-	Mat mask;
-	vector<Mat> layers;
+	Mat mask;			// Máscara para aplicar transparência
+	vector<Mat> layers;	// Vetor para armazenar os canais da imagem
 
 	split(img, layers);       // separa os canais
-	if (layers.size() == 4) { // img com transparência
-		Mat rgb[3] = { layers[0], layers[1], layers[2] };
-		mask = layers[3];   // canal alfa do PNG usado como máscara
-		merge(rgb, 3, img); // junta os canais RGB, agora img não é transparente
+
+	if (layers.size() == 4) { // verifica se a imagem possui canal alfa (transparência)
+
+		Mat rgb[3] = { layers[0], layers[1], layers[2] };	// Canais RGB
+
+		mask = layers[3];   // Canal alfa do PNG usado como máscara
+
+		merge(rgb, 3, img); // Junta os canais RGB, agora img não é transparente
+
+		// Copia a região da imagem para o frame, aplicando a máscara de transparência
 		img(Rect(imgXStart, imgYStart, imgWidth, imgHeight))
 			.copyTo(frame.rowRange(yStart, yEnd).colRange(xStart, xEnd),
 				mask(Rect(imgXStart, imgYStart, imgWidth, imgHeight)));
 	}
-	else if (layers.size() == 3) { // img sem transparência
+
+	else if (layers.size() == 3) { // Se a imagem não possui o canal alfa
+		// Copia diretamente a região da imagem para o frame
 		img(Rect(imgXStart, imgYStart, imgWidth, imgHeight))
 			.copyTo(frame.rowRange(yStart, yEnd).colRange(xStart, xEnd));
 	}
 	else {
+		// Se a imagem não possui 3 ou 4 canais, imprime um erro
 		cout << "ERROR: Unsupported number of channels in image!" << endl;
 	}
 }
@@ -303,13 +417,18 @@ void drawImage(Mat frame, Mat img, int xPos, int yPos) {
  * @param alpha transparence level. 0 is 100% transparent, 1 is opaque.
  * @param region rect region where the should be positioned
  */
+
+// Função responsável por desenhar um retângulo nas faces detectadas
 void drawTransRect(Mat frame, Scalar color, double alpha, Rect region) {
 	// Verifica se a região está dentro dos limites da imagem
 	if (region.x >= 0 && region.y >= 0 && region.x + region.width <= frame.cols &&
 		region.y + region.height <= frame.rows) {
 
+		// Cria uma região de interesse (ROI) a partir do quadro
 		Mat roi = frame(region);
+		// Cria uma imagem do tamanho da ROI preenchida com a cor especificada
 		Mat rectImg(roi.size(), CV_8UC3, color);
+		// Adiciona a imagem do retângulo à ROI, aplicando o nível de transparência
 		addWeighted(rectImg, alpha, roi, 1.0 - alpha, 0, roi);
 	}
 	else {
@@ -318,19 +437,46 @@ void drawTransRect(Mat frame, Scalar color, double alpha, Rect region) {
 	}
 }
 
+// Função que verifica intersecção de dois retângulos.
 bool isIntersecting(const Rect& rect1, const Rect& rect2) {
+	// Verifica a partir da área gerada entre os retangulos (intersecção)
+	// Se for maior que 0 retorna true, caso contrário retorna false
 	return (rect1 & rect2).area() > 0;
 }
 
+/*
+	Função que verifica a interseção entre um retângulo 'r' e um objeto 'objRect'.
+	Ou seja, essa função é utilizada para verificar se o player interagiu com algum objeto
+	Se houver interseção, atualiza a pontuação e reposiciona o objeto.
+*/
 void intersectionPoints(const Rect& r, Rect& objRect, int& yObj, int& xRandObj,
 	int& score, int scoreChange, int soundIndex) {
+	// Verifica se o retângulo 'r' intersecta o 'objRect' ao chamar a função isIntersecting
+	// -> Recebe o objeto e a face 
+	// -> Recebe as coordenadas do objeto
+	// -> Recebe o score atual
+	// -> Recebe o scoreChange do objeto
+	// -> Recebe o som do objeto
 	if (isIntersecting(r, objRect)) {
+		// Atualiza a pontuação adicionando 'scoreChange', valor que varia de objeto p/ objeto
 		score += scoreChange;
+		// Reinicia a coordenada y do objeto
 		yObj = 0;
+		// Gera uma nova coordenada x aleatória para o objeto dentro de um intervalo específico
 		xRandObj = rng.uniform(100, 1161);
+		// Reproduz um efeito sonoro em uma thread separada ao chamar a função playSoundEffectInThread
 		playSoundEffectInThread(soundIndex);
 	}
 }
+
+
+/*
+
+
+	Implementação do corpo da função detectAndDraw
+
+
+*/
 
 void detectAndDraw(Mat& frame, CascadeClassifier& cascade, double scale,
 	bool tryflip, int elapsedTime) {
