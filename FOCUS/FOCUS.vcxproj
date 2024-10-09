@@ -180,6 +180,12 @@
     <Xml Include="haarcascade_frontalface_alt_tree.xml" />
     <Xml Include="haarcascade_frontalface_default.xml" />
   </ItemGroup>
+  <ItemGroup>
+    <Text Include="..\LICENSE.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\README.md" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
