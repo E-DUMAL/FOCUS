@@ -51,7 +51,24 @@ bool isSaved = false;		// Inicializa a variável de controle para saber se o reco
 	Se o arquivo não existir ou não puder ser aberto, exibe uma mensagem de erro. 
 	Caso contrário, lê o valor do placar e o armazena na variável highScore.
 */
-void firstTimeReadFile() {
+
+std::string background_image = "Fundo.png";
+
+class Game {
+	public:
+		void DrawTitleScreen();
+		void firstTimeReadFile();
+		void saveFile(int score);
+
+};
+
+void Game::DrawTitleScreen() {
+	Mat fundo = imread(background_image);
+	resize(fundo, fundo, Size(1280, 720));
+
+}
+
+void Game::firstTimeReadFile() {
 	fstream file;
 	file.open("placar.txt", ios::in);
 	if (!file) {
@@ -63,6 +80,8 @@ void firstTimeReadFile() {
 	}
 }
 
+Game jogo;
+
 /*	
 	Função que salva a maior pontuação (score) no arquivo "placar.txt".
 	Primeiro, tenta abrir o arquivo para leitura e verifica se a pontuação 
@@ -71,7 +90,7 @@ void firstTimeReadFile() {
 	pontuação no arquivo; caso contrário, mantém o recorde atual. 
 	Ao final, define isSaved como true.
 */
-void saveFile(int score) {
+void Game::saveFile(int score) {
 	fstream file;
 	file.open("placar.txt", ios::in);
 	if (!file) {
@@ -249,12 +268,14 @@ int main(int argc, const char** argv) {
 	double scale;			// Fator de escala para redimensionar a imagem durante a detecção
 	char key = 0;			// Variável para armazenar a tecla digitada
 
+	jogo.DrawTitleScreen();
+
 	// Inicializando e configurando as variáveis declaradas
 	cascadeName = "haarcascade_frontalface_alt.xml";	// Arquivo utilizado para a detecção em cascata
 	scale = 1; // usar 1, 2, 4.
 	if (scale < 1)
 		scale = 1;
-	tryflip = false;
+	tryflip = true;
 
 	// Tenta carregar o classificador em cascata
 	if (!cascade.load(cascadeName)) {
@@ -263,7 +284,7 @@ int main(int argc, const char** argv) {
 	}
 
 	// Tenta abrir o vídeo -> Limpar argumento para tentar abrir a câmera
-	if (!capture.open("video720.mp4")) {
+	if (!capture.open(0)) {
 		cout << "Capture from camera #0 didn't work" << endl;
 		return 1;
 	}
@@ -480,17 +501,27 @@ void intersectionPoints(const Rect& r, Rect& objRect, int& yObj, int& xRandObj,
 
 void detectAndDraw(Mat& frame, CascadeClassifier& cascade, double scale,
 	bool tryflip, int elapsedTime) {
-	vector<Rect> faces;
-	Mat grayFrame, smallFrame;
-	Scalar color = Scalar(255, 0, 0);
+	vector<Rect> faces;	// cria um vetor para armazenar os retângulos que representam as faces detectadas
+	Mat grayFrame, smallFrame;	// declara duas matrizes para a imagem em escala de cinza e a imagem redimensionada
+	Scalar color = Scalar(255, 0, 0);	// define a cor para desenhar os retângulos (azul).
 
-	double fx = 1 / scale;
+	double fx = 1 / scale;	// Redimensiona com base no scale
+	// Redimensiona a imagem para 'smallFrame' usando o fx.
 	resize(frame, smallFrame, Size(), fx, fx, INTER_LINEAR_EXACT);
+
+	// Se 'tryflip' for verdadeiro, inverte a imagem horizontalmente.
 	if (tryflip)
 		flip(smallFrame, smallFrame, 1);
+
+	// Converte a imagem colorida 'smallFrame' para escala de cinza em 'grayFrame'
+	// Aplica equalização de histograma à imagem em escala de cinza 'grayFrame'
+	// Essas configurações melhoram a detecção das faces
 	cvtColor(smallFrame, grayFrame, COLOR_BGR2GRAY);
 	equalizeHist(grayFrame, grayFrame);
 
+	// Detecta rostos na imagem 'grayFrame' utilizando o classificador em cascata 'cascade' 
+	// e armazena os retângulos resultantes em 'faces'. Os parâmetros ajustam a escala, 
+	// o número mínimo de vizinhos e o tamanho da detecção.
 	cascade.detectMultiScale(grayFrame, faces, 1.5, 3,
 		0 | CASCADE_FIND_BIGGEST_OBJECT |
 		CASCADE_DO_ROUGH_SEARCH | CASCADE_SCALE_IMAGE,
@@ -498,12 +529,16 @@ void detectAndDraw(Mat& frame, CascadeClassifier& cascade, double scale,
 
 	// PERCORRE AS FACES ENCONTRADAS
 	for (size_t i = 0; i < faces.size(); i++) {
-		Rect r = faces[i];
+
+		Rect r = faces[i]; // Para cada rosto detectado vai haver uma iteração, sendo r a representação 
+
+		// Desenha um retângulo ao redor da face na imagem
 		rectangle(
 			smallFrame, Point(cvRound(r.x), cvRound(r.y)),
 			Point(cvRound((r.x + r.width - 1)), cvRound((r.y + r.height - 1))),
 			color, 3);
 
+		// Define os retângulos para diferentes elementos do jogo para esse frame em especifico
 		Rect coalRect(xRandCoal, yCoal, 100, 84);
 		Rect copperRect(xRandCopper, yCopper, 100, 84);
 		Rect diamondRect(xRandDiamond, yDiamond, 100, 84);
@@ -513,6 +548,9 @@ void detectAndDraw(Mat& frame, CascadeClassifier& cascade, double scale,
 		Rect lapisRect(xRandLapis, yLapis, 100, 84);
 		Rect redstoneRect(xRandRedstone, yRedstone, 100, 84);
 		Rect TNTRect(xRandTNT, yTNT, 100, 84);
+
+		// Verifica enquanto o tempo decorrido é menor ou igual a 30 segundos
+		// se há interseções entre a face e os retângulos dos elementos do jogo
 		if (elapsedTime <= 30000) {
 			intersectionPoints(r, coalRect, yCoal, xRandCoal, score, 5, 0);
 			intersectionPoints(r, TNTRect, yTNT, xRandTNT, score, -100, 1);
@@ -522,13 +560,13 @@ void detectAndDraw(Mat& frame, CascadeClassifier& cascade, double scale,
 			intersectionPoints(r, goldRect, yGold, xRandGold, score, 17, 0);
 			intersectionPoints(r, ironRect, yIron, xRandIron, score, 10, 0);
 			intersectionPoints(r, lapisRect, yLapis, xRandLapis, score, 12, 0);
-			intersectionPoints(r, redstoneRect, yRedstone, xRandRedstone, score, 14,
-				0);
+			intersectionPoints(r, redstoneRect, yRedstone, xRandRedstone, score, 14, 0);
 		}
 	}
 
+
 	if (elapsedTime <= 30000) {
-		// Desenha uma imagem
+		// Enquanto o tempo é menor que 30 seg carrega as imagens dos itens do jogo
 		Mat img = cv::imread("Coal.png", IMREAD_UNCHANGED),
 			img2 = imread("TNT.png", IMREAD_UNCHANGED),
 			img3 = imread("Copper.png", IMREAD_UNCHANGED),
@@ -539,6 +577,7 @@ void detectAndDraw(Mat& frame, CascadeClassifier& cascade, double scale,
 			img8 = imread("Lapis.png", IMREAD_UNCHANGED),
 			img9 = imread("Redstone.png", IMREAD_UNCHANGED);
 
+		// Verifica se cada imagem é maior que 100x84 pixels e redimensiona, se necessário
 		if (img.rows > 100 || img.cols > 84)
 			resize(img, img, Size(100, 84));
 		if (img2.rows > 100 || img2.cols > 84)
@@ -558,6 +597,7 @@ void detectAndDraw(Mat& frame, CascadeClassifier& cascade, double scale,
 		if (img9.rows > 100 || img9.cols > 84)
 			resize(img9, img9, Size(100, 84));
 
+		// Desenha as imagens dos itens na posição especificada no 'smallFrame'
 		drawImage(smallFrame, img, xRandCoal, yCoal);
 		drawImage(smallFrame, img2, xRandTNT, yTNT);
 		drawImage(smallFrame, img3, xRandCopper, yCopper);
@@ -568,6 +608,7 @@ void detectAndDraw(Mat& frame, CascadeClassifier& cascade, double scale,
 		drawImage(smallFrame, img8, xRandLapis, yLapis);
 		drawImage(smallFrame, img9, xRandRedstone, yRedstone);
 
+		// Atualiza a posição vertical de cada item, movendo-os para baixo
 		yCoal += 20;
 		yTNT += 20;
 		yCopper += 20;
@@ -577,6 +618,9 @@ void detectAndDraw(Mat& frame, CascadeClassifier& cascade, double scale,
 		yIron += 20;
 		yLapis += 20;
 		yRedstone += 20;
+		// Verifica se cada item ultrapassou a altura máxima de 720 pixels
+		// Se sim, reinicia a posição vertical e gera uma nova posição horizontal aleatória
+
 		if (yCoal > 720) {
 			yCoal = 0;
 			xRandCoal = rng.uniform(100, 1161);
@@ -614,6 +658,7 @@ void detectAndDraw(Mat& frame, CascadeClassifier& cascade, double scale,
 			xRandRedstone = rng.uniform(100, 1161);
 		}
 	}
+
 	// Desenha quadrados com transparencia
 	double alpha = 1;
 	// drawTransRect(smallFrame, Scalar(255, 0, 0), alpha, Rect(200, 0, 200,
@@ -622,10 +667,14 @@ void detectAndDraw(Mat& frame, CascadeClassifier& cascade, double scale,
 	// Desenha um texto
 	color = Scalar(255, 255, 255);
 
-	firstTimeReadFile();	// Chamando o método para ler o maior record
+	jogo.firstTimeReadFile();	// Chamando o método para ler o maior record
 
-
+	// Inicializa a largura do retângulo para o high score
 	int highScoreWidth = 0;
+
+	// Define a largura do retângulo com base no valor do high score
+	// Sendo pequeno, médio, grande e gigante
+
 	if (highScore < 100 && highScore >-100) {
 		highScoreWidth = 375;
 	}
@@ -638,40 +687,58 @@ void detectAndDraw(Mat& frame, CascadeClassifier& cascade, double scale,
 	else {
 		highScoreWidth = 525;
 	}
-	drawTransRect(smallFrame, Scalar(242, 101, 88), alpha,
-		Rect(0, 620, highScoreWidth, 100));
-	putText(smallFrame, "Recorde: ", Point(0, 700), FONT_HERSHEY_DUPLEX, 2,
-		color);
+
+	// Desenha um retângulo com uma cor específica na parte inferior da tela para exibir o high score
+	drawTransRect(smallFrame, Scalar(242, 101, 88), alpha, Rect(0, 620, highScoreWidth, 100));
+
+	// Adiciona o texto "Recorde:" na tela na posição especificada
+	putText(smallFrame, "Recorde: ", Point(0, 700), FONT_HERSHEY_DUPLEX, 2, color);
+
+	// Exibir as informações da gameplay
 	if (elapsedTime <= 30000) {
-		drawTransRect(smallFrame, Scalar(242, 101, 88), alpha,
-			Rect(0, 0, 825, 110));
+		// Desenha um retângulo com transparência na parte superior da tela
+		drawTransRect(smallFrame, Scalar(242, 101, 88), alpha, Rect(0, 0, 825, 110));
+
+		// Exibe o texto "Placar:" na posição especificada
 		putText(smallFrame, "Placar:", Point(0, 80), FONT_HERSHEY_DUPLEX, 2, color);
-		putText(smallFrame, to_string(score), Point(230, 80), FONT_HERSHEY_DUPLEX,
-			2, color);
-		putText(smallFrame, "Tempo:", Point(450, 80), FONT_HERSHEY_DUPLEX, 2,
-			color);
-		putText(smallFrame, to_string((30000 - elapsedTime) / 1000), Point(730, 80),
-			FONT_HERSHEY_DUPLEX, 2, color);
-		putText(smallFrame, to_string(highScore), Point(280, 700), FONT_HERSHEY_DUPLEX, 2,
-			color);
+
+		// Exibe a pontuação atual na posição especificada
+		putText(smallFrame, to_string(score), Point(230, 80), FONT_HERSHEY_DUPLEX, 2, color);
+
+		// Exibe o texto "Tempo:" na posição especificada
+		putText(smallFrame, "Tempo:", Point(450, 80), FONT_HERSHEY_DUPLEX, 2,color);
+
+		// Calcula e exibe o tempo restante em segundos
+		putText(smallFrame, to_string((30000 - elapsedTime) / 1000), Point(730, 80),FONT_HERSHEY_DUPLEX, 2, color);
+
+		// Exibe o recorde na parte inferior da tela
+		putText(smallFrame, to_string(highScore), Point(280, 700), FONT_HERSHEY_DUPLEX, 2,color);
 	}
 	else {
+		// Se o jogo já terminou e a pontuação não foi salva ele irá salvar
 		if (isSaved == false) {
-			saveFile(score);
+			jogo.saveFile(score);
 		}
-		drawTransRect(smallFrame, Scalar(242, 101, 88), alpha,
-			Rect(0, 0, 1280, 110));
+
+		// Desenha um retângulo com transparência na parte superior da tela para o fim de jogo
+		drawTransRect(smallFrame, Scalar(242, 101, 88), alpha, Rect(0, 0, 1280, 110));
+
+		// Exibe o texto "Placar:" na parte superior
 		putText(smallFrame, "Placar:", Point(0, 80), FONT_HERSHEY_DUPLEX, 2, color);
-		putText(smallFrame, to_string(score), Point(230, 80), FONT_HERSHEY_DUPLEX,
-			2, color);
-		putText(smallFrame, "Fim de Jogo", Point(450, 80), FONT_HERSHEY_DUPLEX, 2,
-			color);
-		putText(smallFrame, to_string(highScore), Point(280, 700), FONT_HERSHEY_DUPLEX, 2,
-			color);
-		putText(smallFrame, "Pressione 'r'", Point(890, 45),
-			FONT_HERSHEY_DUPLEX, 1.75, color);
-		putText(smallFrame, "para reiniciar", Point(890, 90),
-			FONT_HERSHEY_DUPLEX, 1.75, color);
+
+		// Exibe a pontuação final na posição especificada
+		putText(smallFrame, to_string(score), Point(230, 80), FONT_HERSHEY_DUPLEX,2, color);
+
+		// Exibe o texto "Fim de Jogo" na posição especificada
+		putText(smallFrame, "Fim de Jogo", Point(450, 80), FONT_HERSHEY_DUPLEX, 2,color);
+
+		// Exibe o recorde na parte inferior da tela
+		putText(smallFrame, to_string(highScore), Point(280, 700), FONT_HERSHEY_DUPLEX, 2,color);
+
+		// Informa o jogador sobre como reiniciar o jogo
+		putText(smallFrame, "Pressione 'r'", Point(890, 45),FONT_HERSHEY_DUPLEX, 1.75, color);
+		putText(smallFrame, "para reiniciar", Point(890, 90),FONT_HERSHEY_DUPLEX, 1.75, color);
+
 	}
 	// Desenha o frame na tela
 	imshow(wName, smallFrame);

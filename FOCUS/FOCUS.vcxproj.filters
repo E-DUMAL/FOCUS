@@ -25,5 +25,6 @@
     <Image Include="Lapis.png" />
     <Image Include="Redstone.png" />
     <Image Include="TNT.png" />
+    <Image Include="Fundo.png" />
   </ItemGroup>
 </Project>
