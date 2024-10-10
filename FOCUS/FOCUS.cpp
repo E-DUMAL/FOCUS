@@ -268,6 +268,20 @@ int main(int argc, const char** argv) {
 	double scale;			// Fator de escala para redimensionar a imagem durante a detecção
 	char key = 0;			// Variável para armazenar a tecla digitada
 
+	while (1) {
+		namedWindow(wName, WINDOW_KEEPRATIO);
+		Mat fundo = cv::imread("FundoFOCUS.png", IMREAD_UNCHANGED);
+
+		imshow(wName, fundo);
+
+		key = (char)waitKey();
+		if (key == 27 || key == 'q' || key == 'Q')
+			return 0;
+		if (key == 'r' || key == 'R') { // Verifica se a tecla 'r' foi pressionada
+			break;
+		}
+	};
+
 	jogo.DrawTitleScreen();
 
 	// Inicializando e configurando as variáveis declaradas
