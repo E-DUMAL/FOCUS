@@ -6,7 +6,7 @@
 
 */
 
-/* 
+/*
 	Seção Inclusão:
 
 	- Inclusão de Bibliotecas e Depedências
@@ -54,10 +54,21 @@ std::chrono::steady_clock::time_point explodeTime;// Inicializa a variável de te
 	Objeto que possui os métodos de gerenciamento do jogo
 */
 class Game {
-	public:
-		void firstTimeReadFile();
-		void saveFile(int score);
-		void drawMenu(string wName);
+private:
+	void drawTransRect(Mat frame, Scalar color, double alpha, Rect region);
+	bool isIntersecting(const Rect& rect1, const Rect& rect2);
+	void intersectionPoints(const Rect& r, Rect& objRect, int& yObj, int& xRandObj, int& score, int scoreChange, int soundIndex, int explosion);
+
+public:
+	void firstTimeReadFile();
+	void saveFile(int score);
+	void drawMenu(string wName);
+	void detectAndDraw(Mat& frame, CascadeClassifier& cascade, double scale, bool tryflip, int elapsedTime);
+	void playSoundEffect(int soundIndex);
+	void playSoundEffectInThread(int soundIndex);
+	void resetGame();
+	void loadResources();
+	void drawImage(Mat frame, Mat img, int xPos, int yPos);
 };
 
 /*
@@ -77,12 +88,12 @@ void Game::firstTimeReadFile() {
 	}
 };
 
-/*	
+/*
 	Função que salva a maior pontuação (score) no arquivo "placar.txt".
-	Primeiro, tenta abrir o arquivo para leitura e verifica se a pontuação 
-	registrada (highScore) pode ser lida. Em seguida, abre o arquivo para 
-	escrita. Se a pontuação atual for maior que highScore, grava a nova 
-	pontuação no arquivo; caso contrário, mantém o recorde atual. 
+	Primeiro, tenta abrir o arquivo para leitura e verifica se a pontuação
+	registrada (highScore) pode ser lida. Em seguida, abre o arquivo para
+	escrita. Se a pontuação atual for maior que highScore, grava a nova
+	pontuação no arquivo; caso contrário, mantém o recorde atual.
 	Ao final, define isSaved como true.
 */
 void Game::saveFile(int score) {
@@ -130,23 +141,6 @@ Game jogo;
 	Define funções para o uso de textura e sons
 */
 
-/*
-	Definição da assinatura da Função detectAndDraw
-
-	Parâmetros:
-	 - Mat& frame: referência para o quadro de imagem atual a ser processado
-	 
-	 - CascadeClassifier& cascade: referência para o classificador em cascata
-	 
-	 - double scale: fator de escala para redimensionar a imagem durante a detecção.
-	 
-	 - bool tryflip: indica se deve tentar inverter a imagem p/ detectar os objetos
-	
-	 - int elapsedTime: variável que registra o tempo decorrido
-*/
-
-void detectAndDraw(Mat& frame, CascadeClassifier& cascade, double scale,
-	bool tryflip, int elapsedTime);
 
 RNG rng(cv::getTickCount());	// Inicializa um gerador de números aleatórios com o timestamp atual
 string cascadeName;				// Nome do arquivo do classificador em cascata.
@@ -170,7 +164,7 @@ vector<Mat> images(9);	// Vetor para armazenar imagens para o processamento.
 	Verifica se o índice é válido antes de tentar reproduzir o som.
 	Se o índice for inválido, exibe uma mensagem de erro.
 */
-void playSoundEffect(int soundIndex) {
+void Game::playSoundEffect(int soundIndex) {
 	if (soundIndex < 0 || soundIndex >= sounds.size()) {
 		cout << "Erro: Índice de som inválido!" << endl;
 		return;
@@ -182,10 +176,10 @@ void playSoundEffect(int soundIndex) {
 /*
 	Função que reproduz um efeito sonoro ao chamar a função playSoundEffect em uma nova thread.
 */
-void playSoundEffectInThread(int soundIndex) {
+void Game::playSoundEffectInThread(int soundIndex) {
 	// Cria uma nova thread que executa a função playSoundEffect
 	// passando o índice do som como argumento.
-	std::thread t(playSoundEffect, soundIndex);
+	std::thread t(&Game::playSoundEffect, this, soundIndex);
 	// Desacopla a thread, permitindo que ela continue a execução
 	// em segundo plano, independentemente do thread principal.
 	t.detach();
@@ -195,12 +189,12 @@ void playSoundEffectInThread(int soundIndex) {
 	Função que reinicia o estado do jogo.
 	- Chamada ao apertar r
 	- Reinicia as coordenadas dos itens, com x aleatório e y = 0
-	- Zera o score 
+	- Zera o score
 	- Marca como false a variável de controle do save
 	- Reinicia o temporizador do jogo, armazenando o tempo atual na variável startTime
 */
 
-void resetGame() {
+void Game::resetGame() {
 	startTime = chrono::steady_clock::now();
 	xRandCoal = rng.uniform(500, 1500);
 	yCoal = 0;
@@ -227,7 +221,7 @@ void resetGame() {
 /*
 	Função de carregar recursos de som e imagem para o jogo
 */
-void loadResources() {
+void Game::loadResources() {
 	// Carrega o primeiro arquivo de som e verifica se ocorreu um erro.
 	if (!soundBuffers[0].loadFromFile("Pop.wav")) {
 		cout << "Erro ao carregar o arquivo de som Pop.wav!" << endl;
@@ -307,7 +301,7 @@ int main(int argc, const char** argv) {
 	// Configurar de acordo com webcam / vídeo
 	capture.set(CAP_PROP_FRAME_WIDTH, 1280); // Largura desejada
 	capture.set(CAP_PROP_FRAME_HEIGHT, 720); // Altura desejada
-	
+
 	// Testa se a abertura ocorreu com êxito e inicia o jogo
 	if (capture.isOpened()) {
 		cout << "Video capturing has been started ..." << endl;
@@ -319,8 +313,8 @@ int main(int argc, const char** argv) {
 			: 60; // Calcula o tempo de espera em milissegundos,
 		// usa 30ms como padrão se fps for zero
 
-		loadResources(); // Carrega os recursos (sons e imagens)
-		resetGame();     // Inicializa as variáveis do jogo
+		jogo.loadResources(); // Carrega os recursos (sons e imagens)
+		jogo.resetGame();     // Inicializa as variáveis do jogo
 
 		while (1) {	// While onde ocorre a repetição do código
 
@@ -345,13 +339,13 @@ int main(int argc, const char** argv) {
 				.count();
 
 			// Chama a função que detecta os rostos e interage com a exibição
-			detectAndDraw(frame, cascade, scale, tryflip, elapsedTime);
+			jogo.detectAndDraw(frame, cascade, scale, tryflip, elapsedTime);
 
 			key = (char)waitKey(delay); // Usa o tempo de espera calculado
 			if (key == 27 || key == 'q' || key == 'Q')
 				break;
 			if (key == 'r' || key == 'R') { // Verifica se a tecla 'r' foi pressionada
-				resetGame();
+				jogo.resetGame();
 			}
 			// Se a janela for fechada, o while é encerrado
 			if (getWindowProperty(wName, WND_PROP_VISIBLE) == 0)
@@ -366,7 +360,7 @@ int main(int argc, const char** argv) {
 }
 
 /*
-	
+
 	Seção das configurações dos componentes da função detectAndDraw
 
 */
@@ -381,13 +375,13 @@ int main(int argc, const char** argv) {
  * @param yPos y position of the frame image where the image will start.
  */
 
-/*
-	Função responsável por desenhar uma imagem em uma posição especifica
-	-> Recebe o frame
-	-> Recebe a imagem a ser desenhada
-	-> Recebe o x e o y da posição
-*/
-void drawImage(Mat frame, Mat img, int xPos, int yPos) {
+ /*
+	 Função responsável por desenhar uma imagem em uma posição especifica
+	 -> Recebe o frame
+	 -> Recebe a imagem a ser desenhada
+	 -> Recebe o x e o y da posição
+ */
+void Game::drawImage(Mat frame, Mat img, int xPos, int yPos) {
 	// Calcula as dimensões da região onde a imagem será desenhada
 	int width = img.cols;
 	int height = img.rows;
@@ -453,8 +447,8 @@ void drawImage(Mat frame, Mat img, int xPos, int yPos) {
  * @param region rect region where the should be positioned
  */
 
-// Função responsável por desenhar um retângulo nas faces detectadas
-void drawTransRect(Mat frame, Scalar color, double alpha, Rect region) {
+ // Função responsável por desenhar um retângulo nas faces detectadas
+void Game::drawTransRect(Mat frame, Scalar color, double alpha, Rect region) {
 	// Verifica se a região está dentro dos limites da imagem
 	if (region.x >= 0 && region.y >= 0 && region.x + region.width <= frame.cols &&
 		region.y + region.height <= frame.rows) {
@@ -473,7 +467,7 @@ void drawTransRect(Mat frame, Scalar color, double alpha, Rect region) {
 }
 
 // Função que verifica intersecção de dois retângulos.
-bool isIntersecting(const Rect& rect1, const Rect& rect2) {
+bool Game::isIntersecting(const Rect& rect1, const Rect& rect2) {
 	// Verifica a partir da área gerada entre os retangulos (intersecção)
 	// Se for maior que 0 retorna true, caso contrário retorna false
 	return (rect1 & rect2).area() > 0;
@@ -484,7 +478,7 @@ bool isIntersecting(const Rect& rect1, const Rect& rect2) {
 	Ou seja, essa função é utilizada para verificar se o player interagiu com algum objeto
 	Se houver interseção, atualiza a pontuação e reposiciona o objeto.
 */
-void intersectionPoints(const Rect& r, Rect& objRect, int& yObj, int& xRandObj,
+void Game::intersectionPoints(const Rect& r, Rect& objRect, int& yObj, int& xRandObj,
 	int& score, int scoreChange, int soundIndex, int explosion) {
 	// Verifica se o retângulo 'r' intersecta o 'objRect' ao chamar a função isIntersecting
 	// -> Recebe o objeto e a face 
@@ -509,7 +503,7 @@ void intersectionPoints(const Rect& r, Rect& objRect, int& yObj, int& xRandObj,
 		xRandObj = rng.uniform(100, 1161);
 		// Reproduz um efeito sonoro em uma thread separada ao chamar a função playSoundEffectInThread
 		playSoundEffectInThread(soundIndex);
-		
+
 	}
 }
 
@@ -517,12 +511,20 @@ void intersectionPoints(const Rect& r, Rect& objRect, int& yObj, int& xRandObj,
 /*
 
 
-	Implementação do corpo da função detectAndDraw
+	Parâmetros:
+	 - Mat& frame: referência para o quadro de imagem atual a ser processado
 
+	 - CascadeClassifier& cascade: referência para o classificador em cascata
+
+	 - double scale: fator de escala para redimensionar a imagem durante a detecção.
+
+	 - bool tryflip: indica se deve tentar inverter a imagem p/ detectar os objetos
+
+	 - int elapsedTime: variável que registra o tempo decorrido
 
 */
 
-void detectAndDraw(Mat& frame, CascadeClassifier& cascade, double scale,
+void Game::detectAndDraw(Mat& frame, CascadeClassifier& cascade, double scale,
 	bool tryflip, int elapsedTime) {
 	vector<Rect> faces;	// cria um vetor para armazenar os retângulos que representam as faces detectadas
 	Mat grayFrame, smallFrame;	// declara duas matrizes para a imagem em escala de cinza e a imagem redimensionada
@@ -744,13 +746,13 @@ void detectAndDraw(Mat& frame, CascadeClassifier& cascade, double scale,
 		putText(smallFrame, to_string(score), Point(230, 80), FONT_HERSHEY_DUPLEX, 2, color);
 
 		// Exibe o texto "Tempo:" na posição especificada
-		putText(smallFrame, "Tempo:", Point(450, 80), FONT_HERSHEY_DUPLEX, 2,color);
+		putText(smallFrame, "Tempo:", Point(450, 80), FONT_HERSHEY_DUPLEX, 2, color);
 
 		// Calcula e exibe o tempo restante em segundos
-		putText(smallFrame, to_string((30000 - elapsedTime) / 1000), Point(730, 80),FONT_HERSHEY_DUPLEX, 2, color);
+		putText(smallFrame, to_string((30000 - elapsedTime) / 1000), Point(730, 80), FONT_HERSHEY_DUPLEX, 2, color);
 
 		// Exibe o recorde na parte inferior da tela
-		putText(smallFrame, to_string(highScore), Point(280, 700), FONT_HERSHEY_DUPLEX, 2,color);
+		putText(smallFrame, to_string(highScore), Point(280, 700), FONT_HERSHEY_DUPLEX, 2, color);
 	}
 	else {
 		// Se o jogo já terminou e a pontuação não foi salva ele irá salvar
@@ -765,17 +767,17 @@ void detectAndDraw(Mat& frame, CascadeClassifier& cascade, double scale,
 		putText(smallFrame, "Placar:", Point(0, 80), FONT_HERSHEY_DUPLEX, 2, color);
 
 		// Exibe a pontuação final na posição especificada
-		putText(smallFrame, to_string(score), Point(230, 80), FONT_HERSHEY_DUPLEX,2, color);
+		putText(smallFrame, to_string(score), Point(230, 80), FONT_HERSHEY_DUPLEX, 2, color);
 
 		// Exibe o texto "Fim de Jogo" na posição especificada
-		putText(smallFrame, "Fim de Jogo", Point(450, 80), FONT_HERSHEY_DUPLEX, 2,color);
+		putText(smallFrame, "Fim de Jogo", Point(450, 80), FONT_HERSHEY_DUPLEX, 2, color);
 
 		// Exibe o recorde na parte inferior da tela
-		putText(smallFrame, to_string(highScore), Point(280, 700), FONT_HERSHEY_DUPLEX, 2,color);
+		putText(smallFrame, to_string(highScore), Point(280, 700), FONT_HERSHEY_DUPLEX, 2, color);
 
 		// Informa o jogador sobre como reiniciar o jogo
-		putText(smallFrame, "Pressione 'r'", Point(890, 45),FONT_HERSHEY_DUPLEX, 1.75, color);
-		putText(smallFrame, "para reiniciar", Point(890, 90),FONT_HERSHEY_DUPLEX, 1.75, color);
+		putText(smallFrame, "Pressione 'r'", Point(890, 45), FONT_HERSHEY_DUPLEX, 1.75, color);
+		putText(smallFrame, "para reiniciar", Point(890, 90), FONT_HERSHEY_DUPLEX, 1.75, color);
 
 	}
 	// Desenha o frame na tela
