@@ -39,6 +39,8 @@ using namespace cv;   // Namespace OpenCV (cv)
 
 int highScore = INT_MIN;	// Inicializa a variável "Maior Score" com o menor valor possível dos inteiros
 bool isSaved = false;		// Inicializa a variável de controle para saber se o recorde está salvo
+int Explode = 0;			// Inicializa a variável de controle para mostrar as particulas
+std::chrono::steady_clock::time_point explodeTime;// Inicializa a variável de tempo da explosão
 
 /*
 	Seção de gerenciamento de Arquivo:
@@ -46,28 +48,23 @@ bool isSaved = false;		// Inicializa a variável de controle para saber se o reco
 	- Salvar o recorde ao finalizar o programa
 */
 
+
+
 /*
-	Função que tenta abrir o arquivo "placar.txt" para leitura.
-	Se o arquivo não existir ou não puder ser aberto, exibe uma mensagem de erro. 
-	Caso contrário, lê o valor do placar e o armazena na variável highScore.
+	Objeto que possui os métodos de gerenciamento do jogo
 */
-
-std::string background_image = "Fundo.png";
-
 class Game {
 	public:
-		void DrawTitleScreen();
 		void firstTimeReadFile();
 		void saveFile(int score);
-
+		void drawMenu(string wName);
 };
 
-void Game::DrawTitleScreen() {
-	Mat fundo = imread(background_image);
-	resize(fundo, fundo, Size(1280, 720));
-
-}
-
+/*
+	Função que tenta abrir o arquivo "placar.txt" para leitura.
+	Se o arquivo não existir ou não puder ser aberto, exibe uma mensagem de erro.
+	Caso contrário, lê o valor do placar e o armazena na variável highScore.
+*/
 void Game::firstTimeReadFile() {
 	fstream file;
 	file.open("placar.txt", ios::in);
@@ -78,9 +75,7 @@ void Game::firstTimeReadFile() {
 		file >> highScore;
 		file.close();
 	}
-}
-
-Game jogo;
+};
 
 /*	
 	Função que salva a maior pontuação (score) no arquivo "placar.txt".
@@ -116,6 +111,15 @@ void Game::saveFile(int score) {
 	isSaved = true;
 	file.close();
 }
+
+void Game::drawMenu(string wName) {
+	namedWindow(wName, WINDOW_KEEPRATIO);		// Exibe a janela
+	Mat fundo = cv::imread("FundoFOCUS.png", IMREAD_UNCHANGED); // Carrega a imagem 
+
+	imshow(wName, fundo); // Exibe a imagem na janela
+}
+
+Game jogo;
 
 /*
 	Seção de configuraçães de variáveis essenciais e complexas e mecanismos
@@ -154,7 +158,7 @@ auto startTime = chrono::steady_clock::now();
 // Variáveis globais das coordenadas dos itens que aparecem para o player
 int xRandCoal, yCoal, xRandTNT, yTNT, xRandCopper, yCopper, xRandDiamond,
 yDiamond, xRandEmerald, yEmerald, xRandGold, yGold, xRandIron, yIron,
-xRandLapis, yLapis, xRandRedstone, yRedstone, score;
+xRandLapis, yLapis, xRandRedstone, yRedstone, xParticles, yParticles, score;
 
 vector<sf::SoundBuffer> soundBuffers(2);	// Vecotr com Buffers para sons.
 vector<sf::Sound> sounds(2);				// Vector de sons correspondentes aos buffers.
@@ -229,8 +233,8 @@ void loadResources() {
 		cout << "Erro ao carregar o arquivo de som Pop.wav!" << endl;
 	}
 	// Carrega o segundo arquivo de som e verifica se ocorreu um erro.
-	if (!soundBuffers[1].loadFromFile("Anvil.wav")) {
-		cout << "Erro ao carregar o arquivo de som Anvil.wav!" << endl;
+	if (!soundBuffers[1].loadFromFile("Explosion.wav")) {
+		cout << "Erro ao carregar o arquivo de som Explosion.wav!" << endl;
 	}
 
 	// Associa os buffers de som aos objetos de som.
@@ -268,11 +272,9 @@ int main(int argc, const char** argv) {
 	double scale;			// Fator de escala para redimensionar a imagem durante a detecção
 	char key = 0;			// Variável para armazenar a tecla digitada
 
-	while (1) {
-		namedWindow(wName, WINDOW_KEEPRATIO);
-		Mat fundo = cv::imread("FundoFOCUS.png", IMREAD_UNCHANGED);
+	while (1) {	// Escopo para a exibição do menu
 
-		imshow(wName, fundo);
+		jogo.drawMenu(wName);
 
 		key = (char)waitKey();
 		if (key == 27 || key == 'q' || key == 'Q')
@@ -281,8 +283,6 @@ int main(int argc, const char** argv) {
 			break;
 		}
 	};
-
-	jogo.DrawTitleScreen();
 
 	// Inicializando e configurando as variáveis declaradas
 	cascadeName = "haarcascade_frontalface_alt.xml";	// Arquivo utilizado para a detecção em cascata
@@ -485,22 +485,31 @@ bool isIntersecting(const Rect& rect1, const Rect& rect2) {
 	Se houver interseção, atualiza a pontuação e reposiciona o objeto.
 */
 void intersectionPoints(const Rect& r, Rect& objRect, int& yObj, int& xRandObj,
-	int& score, int scoreChange, int soundIndex) {
+	int& score, int scoreChange, int soundIndex, int explosion) {
 	// Verifica se o retângulo 'r' intersecta o 'objRect' ao chamar a função isIntersecting
 	// -> Recebe o objeto e a face 
 	// -> Recebe as coordenadas do objeto
 	// -> Recebe o score atual
 	// -> Recebe o scoreChange do objeto
-	// -> Recebe o som do objeto
+	// -> Recebe o indice do som do objeto
+	// -> Recebe o bool(int) para mostrar a explosão
 	if (isIntersecting(r, objRect)) {
 		// Atualiza a pontuação adicionando 'scoreChange', valor que varia de objeto p/ objeto
 		score += scoreChange;
+		// Se for o caso de explosão irá mostrar particulas no local
+		if (explosion == 1) {
+			Explode = 1;
+			xParticles = xRandObj;
+			yParticles = yObj;
+			explodeTime = chrono::steady_clock::now();
+		}
 		// Reinicia a coordenada y do objeto
 		yObj = 0;
 		// Gera uma nova coordenada x aleatória para o objeto dentro de um intervalo específico
 		xRandObj = rng.uniform(100, 1161);
 		// Reproduz um efeito sonoro em uma thread separada ao chamar a função playSoundEffectInThread
 		playSoundEffectInThread(soundIndex);
+		
 	}
 }
 
@@ -566,15 +575,15 @@ void detectAndDraw(Mat& frame, CascadeClassifier& cascade, double scale,
 		// Verifica enquanto o tempo decorrido é menor ou igual a 30 segundos
 		// se há interseções entre a face e os retângulos dos elementos do jogo
 		if (elapsedTime <= 30000) {
-			intersectionPoints(r, coalRect, yCoal, xRandCoal, score, 5, 0);
-			intersectionPoints(r, TNTRect, yTNT, xRandTNT, score, -100, 1);
-			intersectionPoints(r, copperRect, yCopper, xRandCopper, score, 7, 0);
-			intersectionPoints(r, diamondRect, yDiamond, xRandDiamond, score, 19, 0);
-			intersectionPoints(r, emeraldRect, yEmerald, xRandEmerald, score, 22, 0);
-			intersectionPoints(r, goldRect, yGold, xRandGold, score, 17, 0);
-			intersectionPoints(r, ironRect, yIron, xRandIron, score, 10, 0);
-			intersectionPoints(r, lapisRect, yLapis, xRandLapis, score, 12, 0);
-			intersectionPoints(r, redstoneRect, yRedstone, xRandRedstone, score, 14, 0);
+			intersectionPoints(r, coalRect, yCoal, xRandCoal, score, 5, 0, 0);
+			intersectionPoints(r, TNTRect, yTNT, xRandTNT, score, -100, 1, 1);
+			intersectionPoints(r, copperRect, yCopper, xRandCopper, score, 7, 0, 0);
+			intersectionPoints(r, diamondRect, yDiamond, xRandDiamond, score, 19, 0, 0);
+			intersectionPoints(r, emeraldRect, yEmerald, xRandEmerald, score, 22, 0, 0);
+			intersectionPoints(r, goldRect, yGold, xRandGold, score, 17, 0, 0);
+			intersectionPoints(r, ironRect, yIron, xRandIron, score, 10, 0, 0);
+			intersectionPoints(r, lapisRect, yLapis, xRandLapis, score, 12, 0, 0);
+			intersectionPoints(r, redstoneRect, yRedstone, xRandRedstone, score, 14, 0, 0);
 		}
 	}
 
@@ -589,7 +598,8 @@ void detectAndDraw(Mat& frame, CascadeClassifier& cascade, double scale,
 			img6 = imread("Gold.png", IMREAD_UNCHANGED),
 			img7 = imread("Iron.png", IMREAD_UNCHANGED),
 			img8 = imread("Lapis.png", IMREAD_UNCHANGED),
-			img9 = imread("Redstone.png", IMREAD_UNCHANGED);
+			img9 = imread("Redstone.png", IMREAD_UNCHANGED),
+			img10 = imread("Particles.png", IMREAD_UNCHANGED);
 
 		// Verifica se cada imagem é maior que 100x84 pixels e redimensiona, se necessário
 		if (img.rows > 100 || img.cols > 84)
@@ -611,6 +621,10 @@ void detectAndDraw(Mat& frame, CascadeClassifier& cascade, double scale,
 		if (img9.rows > 100 || img9.cols > 84)
 			resize(img9, img9, Size(100, 84));
 
+		// Redimensiona o tamanho da particula
+		if (img10.rows > 200 || img10.cols > 168)
+			resize(img10, img10, Size(300, 252));
+
 		// Desenha as imagens dos itens na posição especificada no 'smallFrame'
 		drawImage(smallFrame, img, xRandCoal, yCoal);
 		drawImage(smallFrame, img2, xRandTNT, yTNT);
@@ -621,6 +635,7 @@ void detectAndDraw(Mat& frame, CascadeClassifier& cascade, double scale,
 		drawImage(smallFrame, img7, xRandIron, yIron);
 		drawImage(smallFrame, img8, xRandLapis, yLapis);
 		drawImage(smallFrame, img9, xRandRedstone, yRedstone);
+		drawImage(smallFrame, img10, xParticles, yParticles);
 
 		// Atualiza a posição vertical de cada item, movendo-os para baixo
 		yCoal += 20;
@@ -670,6 +685,15 @@ void detectAndDraw(Mat& frame, CascadeClassifier& cascade, double scale,
 		if (yRedstone > 720) {
 			yRedstone = 0;
 			xRandRedstone = rng.uniform(100, 1161);
+		}
+
+		// Escopo para mostrar as particulas de explosão na tela
+		auto now = chrono::steady_clock::now();
+		auto explodeDuration = chrono::duration_cast<chrono::milliseconds>(now - explodeTime).count();
+		if (!(Explode == 1 && explodeDuration < 500)) {
+			Explode = 0;
+			xParticles = 10000000;
+			yParticles = 10000000;
 		}
 	}
 

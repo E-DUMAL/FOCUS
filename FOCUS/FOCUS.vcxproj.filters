@@ -12,8 +12,8 @@
   <ItemGroup>
     <Media Include="video.mp4" />
     <Media Include="Pop.wav" />
-    <Media Include="Anvil.wav" />
     <Media Include="abc.mp4" />
+    <Media Include="Explosion.wav" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="Coal.png" />
@@ -25,12 +25,7 @@
     <Image Include="Lapis.png" />
     <Image Include="Redstone.png" />
     <Image Include="TNT.png" />
-    <Image Include="Fundo.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <Text Include="..\LICENSE.txt" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="..\README.md" />
+    <Image Include="FundoFOCUS.png" />
+    <Image Include="Particles.png" />
   </ItemGroup>
 </Project>
