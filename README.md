@@ -28,11 +28,46 @@ Esse foi um projeto desenvolvido por discentes do curso de *Engenharia da Comput
 
 ## :dart: Objetivo:
 
+O projeto tem como objetivo desenvolver um jogo utilizando uma biblioteca Visão Computacional em C++ que consiga proporcionar uma boa jogabilidade a partir de entradas da câmera do usuário. O jogo deve ter como requisito:[^1][^2] 
+
+[^1]: ***[C++](https://www.w3schools.com/cpp/cpp_intro.asp)***
+
+[^2]: ***[Visão Computacional](https://www.ibm.com/br-pt/topics/computer-vision)***
+
+1. Utilizar classes e desenvolver o [Diagrama de Classes](#apple-diagrama-de-classes-1)
+2. Rodar indefinidamente até que o usuário resolvar sair
+3. Possuir um menu
+4. Exibir a maior pontuação, a pontuação atual e sempre salvar a maior pontuação
+5. Utilizar de uma Biblioteca de Visão Computacional ( OpenCV, Yolo ou OpenPose para detectar o jogador )
+6. Possuir Jogabilidade/Usabilidade
+7. Tocar sons de efeito
+
+### Temática
+
+Resolvemos desenvolver o nosso jogo se baseando na temática do [Minecraft](https://pt.wikipedia.org/wiki/Minecraft)[^3][^4], mas com a perspectiva disponível (2D). O jogador deve tentar pegar o maior número de minérios, que concedem pontuações diferentes de acordo com sua raridade, enquanto evita ao máximo as TNTs, que reduzem sua pontuação.
+
+Pontuação:
+
+- Esmeralda:  +22 pontos
+- Diamante:  +19 pontos
+- Ouro:  +17 pontos
+- Redstone:  +14 pontos
+- Lápis-lazúli:  +12 pontos
+- Ferro:  +10 pontos
+- Cobre:  +7 pontos
+- Carvão:  +5 pontos
+- Dinamite:  -100 pontos
+
+[^3]: ***[Minecraft](https://pt.wikipedia.org/wiki/Minecraft)***
+
+[^4]: Todos os direitos de imagens e recursos do jogo pertencem a Mojang Studios. 
+Nenhuma cópia deste jogo foi distribuída por meio de venda.
+Não recomendamos a reutilização das imagens aqui utilizadas
+
 ![icons8-minecraft](https://github.com/user-attachments/assets/bcd1373c-9cde-42af-a64c-3358963fc586)
 
 ## :apple: Diagrama de Classes
 
-![icons8-minecraft](https://github.com/user-attachments/assets/9ac4ab9c-65a9-40d5-bc24-03d20cd1ebf9)
 
 ## :cut_of_meat: Dependências
 
