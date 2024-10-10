@@ -28,4 +28,7 @@
     <Image Include="FundoFOCUS.png" />
     <Image Include="Particles.png" />
   </ItemGroup>
+  <ItemGroup>
+    <Text Include="placar.txt" />
+  </ItemGroup>
 </Project>

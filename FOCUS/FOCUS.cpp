@@ -1,12 +1,4 @@
 /*
-	Seção To-do - Controle de desenvolvimento
-	-> Fazer classes:
-		-> Fazer uma classe de gerenciamento p/ firstTimeReadFile e saveFile
-		-> Fazer classe para tocar os sons
-
-*/
-
-/*
 	Seção Inclusão:
 
 	- Inclusão de Bibliotecas e Depedências
@@ -43,12 +35,21 @@ int Explode = 0;			// Inicializa a variável de controle para mostrar as particul
 std::chrono::steady_clock::time_point explodeTime;// Inicializa a variável de tempo da explosão
 
 /*
-	Seção de gerenciamento de Arquivo:
-	- Ler o recorde ao iniciar o programa
-	- Salvar o recorde ao finalizar o programa
+	Seção de Classes:
 */
 
+class Sounds {
+public:
+	void playSoundEffect(int soundIndex);
+	void playSoundEffectInThread(int soundIndex);
 
+};
+
+class File {
+	public:
+		void firstTimeReadFile();
+		void saveFile(int score);
+};
 
 /*
 	Objeto que possui os métodos de gerenciamento do jogo
@@ -60,12 +61,10 @@ private:
 	void intersectionPoints(const Rect& r, Rect& objRect, int& yObj, int& xRandObj, int& score, int scoreChange, int soundIndex, int explosion);
 
 public:
-	void firstTimeReadFile();
-	void saveFile(int score);
+	Sounds Som;
+	File file;
 	void drawMenu(string wName);
 	void detectAndDraw(Mat& frame, CascadeClassifier& cascade, double scale, bool tryflip, int elapsedTime);
-	void playSoundEffect(int soundIndex);
-	void playSoundEffectInThread(int soundIndex);
 	void resetGame();
 	void loadResources();
 	void drawImage(Mat frame, Mat img, int xPos, int yPos);
@@ -76,7 +75,7 @@ public:
 	Se o arquivo não existir ou não puder ser aberto, exibe uma mensagem de erro.
 	Caso contrário, lê o valor do placar e o armazena na variável highScore.
 */
-void Game::firstTimeReadFile() {
+void File::firstTimeReadFile() {
 	fstream file;
 	file.open("placar.txt", ios::in);
 	if (!file) {
@@ -96,7 +95,7 @@ void Game::firstTimeReadFile() {
 	pontuação no arquivo; caso contrário, mantém o recorde atual.
 	Ao final, define isSaved como true.
 */
-void Game::saveFile(int score) {
+void File::saveFile(int score) {
 	fstream file;
 	file.open("placar.txt", ios::in);
 	if (!file) {
@@ -154,7 +153,7 @@ int xRandCoal, yCoal, xRandTNT, yTNT, xRandCopper, yCopper, xRandDiamond,
 yDiamond, xRandEmerald, yEmerald, xRandGold, yGold, xRandIron, yIron,
 xRandLapis, yLapis, xRandRedstone, yRedstone, xParticles, yParticles, score;
 
-vector<sf::SoundBuffer> soundBuffers(2);	// Vecotr com Buffers para sons.
+vector<sf::SoundBuffer> soundBuffers(2);	// Vector com Buffers para sons.
 vector<sf::Sound> sounds(2);				// Vector de sons correspondentes aos buffers.
 
 vector<Mat> images(9);	// Vetor para armazenar imagens para o processamento.
@@ -164,7 +163,7 @@ vector<Mat> images(9);	// Vetor para armazenar imagens para o processamento.
 	Verifica se o índice é válido antes de tentar reproduzir o som.
 	Se o índice for inválido, exibe uma mensagem de erro.
 */
-void Game::playSoundEffect(int soundIndex) {
+void Sounds::playSoundEffect(int soundIndex) {
 	if (soundIndex < 0 || soundIndex >= sounds.size()) {
 		cout << "Erro: Índice de som inválido!" << endl;
 		return;
@@ -176,10 +175,10 @@ void Game::playSoundEffect(int soundIndex) {
 /*
 	Função que reproduz um efeito sonoro ao chamar a função playSoundEffect em uma nova thread.
 */
-void Game::playSoundEffectInThread(int soundIndex) {
+void Sounds::playSoundEffectInThread(int soundIndex) {
 	// Cria uma nova thread que executa a função playSoundEffect
 	// passando o índice do som como argumento.
-	std::thread t(&Game::playSoundEffect, this, soundIndex);
+	std::thread t(&Sounds::playSoundEffect, this, soundIndex);
 	// Desacopla a thread, permitindo que ela continue a execução
 	// em segundo plano, independentemente do thread principal.
 	t.detach();
@@ -502,7 +501,7 @@ void Game::intersectionPoints(const Rect& r, Rect& objRect, int& yObj, int& xRan
 		// Gera uma nova coordenada x aleatória para o objeto dentro de um intervalo específico
 		xRandObj = rng.uniform(100, 1161);
 		// Reproduz um efeito sonoro em uma thread separada ao chamar a função playSoundEffectInThread
-		playSoundEffectInThread(soundIndex);
+		Som.playSoundEffectInThread(soundIndex);
 
 	}
 }
@@ -707,7 +706,7 @@ void Game::detectAndDraw(Mat& frame, CascadeClassifier& cascade, double scale,
 	// Desenha um texto
 	color = Scalar(255, 255, 255);
 
-	jogo.firstTimeReadFile();	// Chamando o método para ler o maior record
+	file.firstTimeReadFile();	// Chamando o método para ler o maior record
 
 	// Inicializa a largura do retângulo para o high score
 	int highScoreWidth = 0;
@@ -728,11 +727,16 @@ void Game::detectAndDraw(Mat& frame, CascadeClassifier& cascade, double scale,
 		highScoreWidth = 525;
 	}
 
-	// Desenha um retângulo com uma cor específica na parte inferior da tela para exibir o high score
-	drawTransRect(smallFrame, Scalar(242, 101, 88), alpha, Rect(0, 620, highScoreWidth, 100));
+	if (highScore != INT_MIN) {
+		// Desenha um retângulo com uma cor específica na parte inferior da tela para exibir o high score
+		drawTransRect(smallFrame, Scalar(242, 101, 88), alpha, Rect(0, 620, highScoreWidth, 100));
 
-	// Adiciona o texto "Recorde:" na tela na posição especificada
-	putText(smallFrame, "Recorde: ", Point(0, 700), FONT_HERSHEY_DUPLEX, 2, color);
+		// Adiciona o texto "Recorde:" na tela na posição especificada
+		putText(smallFrame, "Recorde: ", Point(0, 700), FONT_HERSHEY_DUPLEX, 2, color);
+
+		// Exibe o recorde na parte inferior da tela
+		putText(smallFrame, to_string(highScore), Point(280, 700), FONT_HERSHEY_DUPLEX, 2, color);
+	}
 
 	// Exibir as informações da gameplay
 	if (elapsedTime <= 30000) {
@@ -751,13 +755,11 @@ void Game::detectAndDraw(Mat& frame, CascadeClassifier& cascade, double scale,
 		// Calcula e exibe o tempo restante em segundos
 		putText(smallFrame, to_string((30000 - elapsedTime) / 1000), Point(730, 80), FONT_HERSHEY_DUPLEX, 2, color);
 
-		// Exibe o recorde na parte inferior da tela
-		putText(smallFrame, to_string(highScore), Point(280, 700), FONT_HERSHEY_DUPLEX, 2, color);
 	}
 	else {
 		// Se o jogo já terminou e a pontuação não foi salva ele irá salvar
 		if (isSaved == false) {
-			jogo.saveFile(score);
+			file.saveFile(score);
 		}
 
 		// Desenha um retângulo com transparência na parte superior da tela para o fim de jogo
