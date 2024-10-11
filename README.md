@@ -117,60 +117,70 @@ Seu componente de inclusão:
 
 ## :zombie: Como rodar
 
+Se você pensa que o emoji deste tópico é um zumbi à toa, pode ter certeza de que está enganado!
+Brincadeiras à parte, o processo para rodar no Windows requer um pouco de paciência e perseverança.
+
+[**Atenção:** Lembre de baixar o projeto e extraí-lo devidamente do `.zip`.](#gem-focus---facial-opencv-unearthing-system)
+
+### Bash - Linux ou Mac
+
 ***Requisitos***
 - Um compilador c++, recomendamos o `clang++` ou o `g++`
 - Um terminal de linha de comando
 
-[**Atenção:** Lembre de baixar o projeto e extraí-lo devidamente do `.zip`.](#medal_sports-projeto-crud---jogos-olímpicos)
+Para instalar o OpenCV no Linux recomendamos o [Tutorial do Docente](Tutorial baseado no [Tutorial do Docente](https://sites.google.com/site/derzuomaia/tutoriais/instala%C3%A7%C3%A3o-opencv-no-linux-ubuntu?authuser=0)
 
-### Bash
-
-Utilizando `g++` para compilar
+Mas de maneira geral:
 
 ```sh
-cd /path/to/Projeto-CRUD
-g++ main.cpp -I include/ src/*.cpp -o olimpiadas.out
+sudo apt install libopencv-dev
 ```
 
-Utilizando `clang++` para compilar
+Para compilar
 
 ```sh
-cd /path/to/Projeto-CRUD
-clang++ main.cpp -I include/ src/*.cpp -o olimpiadas.out
+g++ FOCUS.cpp `pkg-config --cflags opencv4` `pkg-config --libs --static opencv4` -o FOCUS.out
 ```
 
 Para rodar
 
 ```sh
-./olimpiadas.out
+./FOCUS.out
 ```
 
 ### No Windows
 
-Utilizando `g++` para compilar
+***Requisitos***
+- Um compilador c++, recomendamos o `clang++` ou o `g++`
+- Um terminal de linha de comando
+- Recomendamos a utilização da IDE[^8] Visual Studio 2022[^9]
+- Muita Paciência
+
+[^8]: [IDE](https://www.redhat.com/pt-br/topics/middleware/what-is-ide)
+[^9]: [Visual Studio](https://visualstudio.microsoft.com/pt-br/)
+
+Para instalar o OpenCV no Windows recomendamos os seguinte tutorial:
+
+[Tutorial para instalar o OpenCV - Precisa fazer a build com o CMake](https://www.youtube.com/watch?v=Kyugg8LFLKw)
+OBS.: Caso o erro abaixo apareça, ou algum semelhante, recomendamos o uso do seguinte booleano ao realizar a build pelo CMake
+
+OPENCV_VS_VERSIONINFO_SKIP com o value 1
 
 ```sh
-cd /path/to/Projeto-CRUD
-g++ main.cpp -I include/ src/*.cpp -o olimpiadas.exe
+C:/msys64/mingw64/bin/../lib/gcc/x86_64-w64-mingw32/13.2.0/../../../../x86_64-w64-mingw32/bin/ld.exe: i386 architecture of input file `CMakeFiles\opencv_core.dir/objects.a(vs_version.rc.obj)' is incompatible with i386:x86-64 output
+collect2.exe: error: ld returned 1 exit status
+modules\core\CMakeFiles\opencv_core.dir\build.make:1952: recipe for target 'bin/libopencv_core4100.dll' failed
+mingw32-make[2]: * [bin/libopencv_core4100.dll] Error 1
+CMakeFiles\Makefile2:1864: recipe for target 'modules/core/CMakeFiles/opencv_core.dir/all' failed
+mingw32-make[1]: * [modules/core/CMakeFiles/opencv_core.dir/all] Error 2
+Makefile:164: recipe for target 'all' failed
+mingw32-make: * [all] Error 2
 ```
 
-Utilizando `clang++` para compilar
+Após a instalação, é necessário vincular o diretório nas variáveis de ambiente do Windows e vincular o diretório no Visual Studio. Para isso, recomendamos o seguinte vídeo:
 
-```sh
-cd /path/to/Projeto-CRUD
-clang++ main.cpp -I include/ src/*.cpp -o olimpiadas.exe
-```
+- Assistir do minuto 1:40 até o 6:40, capítulos "Linking Environment Variables" e "Linking OpenCV Libraries"
 
-Para rodar
+[Tutorial para vincular o OpenCV](https://www.youtube.com/watch?v=Kyugg8LFLKw)
 
-```sh
-./olimpiadas.exe
-```
-
-### Atenção
-Para warnings referentes a codificação, recomendamos o uso da seguinte flag na compilação (válido para clang++)
-```sh
--Wno-invalid-source-encoding
-```
-
-**OBS.:** Utilizamos de barra normal ('/') considerando um ambiente como Git Bash, WSL e PowerShell, considere utilizar de barra invertida ('\\') em caso de não compilar
+**OBS.:** Não garantimos que o processo funcionará, e ele pode se tornar obsoleto. Recomendamos o uso de informações auxiliares e complementares de fontes externas. Em caso de dúvidas sobre o processo descrito acima, entre em contato conosco. Utilizamos de barra normal ('/') considerando um ambiente como Git Bash, WSL e PowerShell, considere utilizar de barra invertida ('\\') em caso de não compilar
