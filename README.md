@@ -28,7 +28,7 @@ Esse foi um projeto desenvolvido por discentes do curso de *Engenharia da Comput
 
 ## :dart: Objetivo:
 
-O projeto tem como objetivo desenvolver um jogo utilizando uma biblioteca Visão Computacional em C++ que consiga proporcionar uma boa jogabilidade a partir de entradas da câmera do usuário. O jogo deve ter como requisito:[^1][^2] 
+O projeto tem como objetivo desenvolver um jogo utilizando uma biblioteca de Visão Computacional em C++ que consiga proporcionar uma boa jogabilidade a partir de entradas da câmera do usuário. O jogo deve ter como requisito:[^1][^2] 
 
 [^1]: ***[C++](https://www.w3schools.com/cpp/cpp_intro.asp)***
 
@@ -44,7 +44,7 @@ O projeto tem como objetivo desenvolver um jogo utilizando uma biblioteca Visão
 
 ### Temática
 
-Resolvemos desenvolver o nosso jogo se baseando na temática do [Minecraft](https://pt.wikipedia.org/wiki/Minecraft)[^3][^4], mas com a perspectiva disponível (2D). O jogador deve tentar pegar o maior número de minérios, que concedem pontuações diferentes de acordo com sua raridade, enquanto evita ao máximo as TNTs, que reduzem sua pontuação.
+Resolvemos desenvolver o nosso jogo baseado na temática do [Minecraft](https://pt.wikipedia.org/wiki/Minecraft)[^3][^4], mas com a perspectiva disponível (2D). O jogador deve tentar pegar o maior número de minérios, que concedem pontuações diferentes de acordo com sua raridade, enquanto evita ao máximo as TNTs, que reduzem sua pontuação.
 
 Pontuação:
 
@@ -68,45 +68,52 @@ Não recomendamos a reutilização das imagens aqui utilizadas
 
 ## :apple: Diagrama de Classes
 
+![Diagrama de Classes](https://github.com/user-attachments/assets/0c7c16ec-8175-4caa-b09e-4ae48a3fa319)
 
 ## :cut_of_meat: Dependências
 
-Este projeto foi desenvolvido utilizando apenas funcionalidades da biblioteca padrão do C++ e do sistema operacional[^3][^4], ou seja, nenhuma biblioteca externa foi incluída no código. Abaixo, dissertamos sobre a utilidade de cada uma das funcionalidades da biblioteca padrão implementadas, e exemplos de sua utilidade dentro do projeto:
+Este projeto foi desenvolvido utilizando funcionalidades da biblioteca padrão do C++[^5] e de duas bibliotecas externas, sendo elas a biblioteca OpenCV[^6] e a biblioteca SFML[^7]. Abaixo, dissertamos sobre a utilidade de cada uma das bibliotecas e exemplos de recursos utilizados dentro do projeto:
 
-[^3]: ***[Biblioteca Padrão do C++](https://en.cppreference.com/w/cpp/header)***
-[^4]: ***[Sistema Operacional](https://tecnoblog.net/responde/o-que-e-um-sistema-operacional/)***
+### Biblioteca Padrão[^5]
 
-### Biblioteca Padrão
+[^5]: ***[Biblioteca Padrão do C++](https://en.cppreference.com/w/cpp/header)***
 
 - **`<iostream>`**: Usada para operações básicas de entrada e saída, como leitura de dados do teclado (`std::cin`) e escrita de dados na tela (`std::cout`).
-  - **Implementação:** Em interações direta com um usuário, via terminal.
-
-- **`<string>`**: Fornece suporte à manipulação de strings, permitindo o uso da classe `std::string` para trabalhar com cadeias de caracteres de maneira mais conveniente a partir dos métodos fornecidos pela classe.
-  - **Implementação:** Em validações de entradas do tipo `std::string` pelo usuário, em comparações utilizando `.find()` e em conversões entre tipos utilizando dos métodos `.toString()` e `.stoi()`.
+  - **Implementação:** Por não precisar de entradas via terminal, foi utilizada somente para exibição de estados no terminal.
 
 - **`<vector>`**: Fornece a classe `std::vector`, facilitando armazenar e manipular coleções de dados dinâmicos em formato de lista. A classe `std::vector` permite criar arrays dinâmicos que podem redimensionar automaticamente à medida que novos elementos são adicionados, que tornam sua utilização, a priori, intuitiva com os métodos da classe.
-  - **Implementação:** Em compor o Objeto de GerencimentoOlimpada com dois arrays dinâmicos primordiais para o funcionamento de todo o CRUD, que teve como auxílio métodos como `push_back()` e `erase()`
+  - **Implementação:** Para organizar os sons, matrizes de canais, frames, etc.
 
 - **`<fstream>`**: Fornece as classes para leitura e escrita em arquivos, como `std::fstream`, e seus respectivos métodos.
-  - **Implementação:** Ao ler e escrever os dados em arquivos `.txt`, ou seja, é primordial para a execução sequencial do programa, utilizando os métodos `.open()` e `.close` para a disposição do arquivo.
+  - **Implementação:** Ao ler e escrever os dados em arquivos `.txt`, ou seja, é primordial para o salvamento dos dados de pontução, ao utilizar os métodos `.open()` e `.close` para a disposição do arquivo.
 
-- **`<limits>`**: Fornece informações sobre os limites das variáveis numéricas (como o valor máximo e mínimo que um tipo de dado pode armazenar) usando a classe `std::numeric_limits`.
-  - **Implementação:** Ao tratar as entradas númericas do usuário, como ao utilizar o código `std::numeric_limits<std::streamsize>::max()` para receber no `cin.ignore()` valores irrelevantes.
+- **`<chrono>`**: Oferece funcionalidades para medição de tempo, temporizadores, e manipulação de intervalos de tempo, como o método `chrono::steady_clock::now();` que é capaz de retornar o tempo.
+  - **Implementação:** Utilizada para pegar o tempo atual durante a execução do programa e contar o tempo decorrido.
+ 
+- **`<thread>`**: Suporte à execução paralela de código com múltiplas threads, facilitando a execução não concorrente do programa.
+  - **Implementação:** Para tocar múltiplos sons ao mesmo tempo, no caso de múltipla interação do usuário.
 
-- **`<algorithm>`**: Inclui uma variedade de algoritmos genéricos, como ordenação (`std::sort`), busca (`std::find`), entre outros, que podem ser aplicados a contêineres como vetores.
-  - **Implementação:** Ao converter os ìndices (`char`) de uma determinada `std::string` em minúsculo utilizando do método `std::transform`.
+### Biblioteca OpenCV - Open Source Computer Vision Library[^6] 
 
-- **`<locale>`**: Usada para trabalhar com diferentes configurações regionais, como formatos de números, datas, e outros parâmetros que podem variar conforme a localidade. A classe `std::locale` permite adaptar o comportamento do programa ao ambiente cultural do usuário.
-  - **Implementação:** Ao formatar todo nosso código para o idioma Português brasileiro, para, assim, utilizar de acentos e caracteres especifícos do idioma, como `ç, ~`, utilizamos do método `std::setlocale()`.
+[^6]: ***[Biblioteca OpenCV](https://opencv.org/about/)***
 
-### Bibliotecas Específicas de Plataforma
-- O uso de `<unistd.h>` e `<windows.h>` depende da plataforma em que o programa está sendo compilado.
+A biblioteca OpenCV foi escolhida para ser a biblioteca responsável por captar e interpretar as informações vindas da câmera do usuário, sendo os componentes utilizados no projeto:
 
-- **`<unistd.h>`** (Linux/Unix): Usada para acessar várias funcionalidades do sistema operacional POSIX, como chamadas de sistema para manipulação de arquivos, gerenciamento de processos, e manipulação de diretórios. Esta biblioteca é exclusiva para sistemas Unix-like.
-  - **Implementação:** Ao decorar o terminal com uma pequena pausa utilizando do método `.sleep()`
-  
-- **`<windows.h>`** (Windows): Inclui funcionalidades específicas para o sistema operacional Windows, como manipulação de janelas, interação com hardware, gerenciamento de processos e threads, e muito mais. Esta biblioteca é exclusiva para o sistema operacional Windows.
-  - **Implementação:** Ao decorar o terminal com uma pequena pausa utilizando do método `.sleep()`
+- **`<opencv2/core.hpp>`**: Fornece funções fundamentais de manipulação de matrizes e operações matemáticas.
+- **`<opencv2/highgui.hpp>`**: Responsável pela exibição de imagens e vídeos, além de criar interfaces gráficas.
+- **`<opencv2/imgproc.hpp>`**: Usada para processamento de imagens, como filtragem, transformações, e detecção de bordas.
+- **`<opencv2/objdetect.hpp>`**: Realiza detecção de objetos, como faces, corpos, ou outros padrões.
+- **`<opencv2/videoio.hpp>`**: Lida com captura e gravação de vídeos, acessando dispositivos de captura como câmeras.
+ 
+### Biblioteca SFML - Simple and Fast Multimedia Library[^7]
+
+[^7]: ***[Biblioteca SFML](https://www.sfml-dev.org/)***
+
+A biblioteca SFML foi escolhida para ser responsável pela reprodução de áudios (efeitos sonoros) no projeto. A decisão de utilizá-la foi tomada principalmente por sua capacidade de reproduzir áudios de maneira paralela (não bloqueante), o que a torna uma escolha preferível em relação à biblioteca de áudio do sistema operacional. Por ser uma biblioteca leve e importante, a mesma está importada dentro do projeto para garantir uma reprodução de áudio eficiente e sem sobrecarregar o desempenho do sistema.
+
+Seu componente de inclusão:
+
+- **`<SFML/Audio.hpp>`**: Utilizada para manipulação de áudio, incluindo reprodução de sons e música.
 
 ## :zombie: Como rodar
 
