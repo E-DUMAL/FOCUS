@@ -128,7 +128,7 @@ Brincadeiras √† parte, o processo para rodar no Windows requer um pouco de paci√
 - Um compilador c++, recomendamos o `clang++` ou o `g++`
 - Um terminal de linha de comando
 
-Para instalar o OpenCV no Linux recomendamos o [Tutorial do Docente](Tutorial baseado no [Tutorial do Docente](https://sites.google.com/site/derzuomaia/tutoriais/instala%C3%A7%C3%A3o-opencv-no-linux-ubuntu?authuser=0)
+Para instalar o OpenCV no Linux recomendamos o [Tutorial do Docente](https://sites.google.com/site/derzuomaia/tutoriais/instala%C3%A7%C3%A3o-opencv-no-linux-ubuntu?authuser=0)
 
 Mas de maneira geral:
 
