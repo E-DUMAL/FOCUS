@@ -184,4 +184,6 @@ Após a instalação, é necessário vincular o diretório nas variáveis de amb
 
 [Tutorial para vincular o OpenCV](https://www.youtube.com/watch?v=Kyugg8LFLKw)
 
+O Visual Studio disponibiliza um botão de compilar e rodar, recomendamos sempre o modo release.
+
 **OBS.:** Não garantimos que o processo funcionará, e ele pode se tornar obsoleto. Recomendamos o uso de informações auxiliares e complementares de fontes externas. Em caso de dúvidas sobre o processo descrito acima, entre em contato conosco. Utilizamos de barra normal ('/') considerando um ambiente como Git Bash, WSL e PowerShell, considere utilizar de barra invertida ('\\') em caso de não compilar
