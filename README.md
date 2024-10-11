@@ -129,8 +129,7 @@ Brincadeiras √† parte, o processo para rodar no Windows requer um pouco de paci√
 - Um terminal de linha de comando
 
 Para instalar o OpenCV no Linux recomendamos o [Tutorial do Docente](https://sites.google.com/site/derzuomaia/tutoriais/instala%C3%A7%C3%A3o-opencv-no-linux-ubuntu?authuser=0)
-
-Mas de maneira geral:
+Mas de maneira geral - Requer o pkg previamente instalado e configurado:
 
 ```sh
 sudo apt install libopencv-dev
@@ -147,6 +146,8 @@ Para rodar
 ```sh
 ./FOCUS.out
 ```
+
+[Passo-a-passo Completo](https://sites.google.com/site/derzuomaia/tutoriais/instala%C3%A7%C3%A3o-opencv-no-linux-ubuntu-compilando?authuser=0)
 
 ### No Windows
 
