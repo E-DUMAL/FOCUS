@@ -64,7 +64,7 @@ Pontuação:
 Nenhuma cópia deste jogo foi distribuída por meio de venda.
 Não recomendamos a reutilização das imagens aqui utilizadas
 
-![icons8-minecraft](https://github.com/user-attachments/assets/bcd1373c-9cde-42af-a64c-3358963fc586)
+[![icons8-minecraft](https://github.com/user-attachments/assets/bcd1373c-9cde-42af-a64c-3358963fc586)](https://pt.wikipedia.org/wiki/Minecraft)
 
 ## :apple: Diagrama de Classes
 
