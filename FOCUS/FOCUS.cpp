@@ -78,10 +78,7 @@ public:
 void File::firstTimeReadFile() {
 	fstream file;
 	file.open("placar.txt", ios::in);
-	if (!file) {
-		cout << "Erro ao abrir o arquivo para leitura!" << endl;
-	}
-	else {
+	if (file) {
 		file >> highScore;
 		file.close();
 	}
@@ -98,10 +95,7 @@ void File::firstTimeReadFile() {
 void File::saveFile(int score) {
 	fstream file;
 	file.open("placar.txt", ios::in);
-	if (!file) {
-		cout << "Erro ao abrir o arquivo para leitura!" << endl;
-	}
-	else {
+	if (file) {
 		file >> highScore;
 		file.close();
 	}
@@ -318,7 +312,6 @@ int main(int argc, const char** argv) {
 		while (1) {	// While onde ocorre a repetição do código
 
 			capture >> frame;	// Captura um novo quadro do vídeo
-			capture >> frame;	// Captura um segundo quadro
 
 			if (frame.empty()) {	// Testa se o frame está vazio
 				cout << "ERROR: Frame is empty!" << endl;
