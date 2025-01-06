@@ -182,7 +182,7 @@ Após a instalação, é necessário vincular o diretório nas variáveis de amb
 
 - Assistir do minuto 1:40 até o 6:40, capítulos "Linking Environment Variables" e "Linking OpenCV Libraries"
 
-[Tutorial para vincular o OpenCV](https://www.youtube.com/watch?v=Kyugg8LFLKw)
+[Tutorial para vincular o OpenCV](https://www.youtube.com/watch?v=WnRAcpWqR7I)
 
 O Visual Studio disponibiliza um botão de compilar e rodar, recomendamos sempre o modo release.
 
