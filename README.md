@@ -26,7 +26,7 @@ Esse foi um projeto desenvolvido por discentes do curso de *Engenharia da Comput
 
 <!-- Colocar link na imagem -->
 
-## :dart: Objetivo:
+## :dart: Objetivo
 
 O projeto tem como objetivo desenvolver um jogo utilizando uma biblioteca de Visão Computacional em C++ que consiga proporcionar uma boa jogabilidade a partir de entradas da câmera do usuário. O jogo deve ter como requisito:[^1][^2] 
 
